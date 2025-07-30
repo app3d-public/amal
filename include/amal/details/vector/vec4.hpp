@@ -28,33 +28,11 @@ namespace amal
 
 #include "definition.inl"
 
-        template <AMAL_CONSTRUCT_SIMD>
-        constexpr explicit vec(T scalar) noexcept : data{scalar, scalar, scalar, scalar}
-        {
-        }
+        constexpr explicit vec(T scalar) noexcept : data{scalar, scalar, scalar, scalar} {}
 
-        template <AMAL_CONSTRUCT_NOSIMD>
-        constexpr explicit vec(T scalar) noexcept : data{scalar, scalar, scalar, scalar}
-        {
-        }
+        constexpr vec(T a, T b, T c, T d) : data{a, b, c, d} {}
 
-        template <AMAL_CONSTRUCT_SIMD>
-        constexpr vec(T a, T b, T c, T d) : data{a, b, c, d}
-        {
-        }
-
-        template <AMAL_CONSTRUCT_NOSIMD>
-        constexpr vec(T a, T b, T c, T d) : data{a, b, c, d}
-        {
-        }
-
-        template <typename X, typename Y, typename Z, typename W, AMAL_CONSTRUCT_SIMD>
-        inline constexpr vec(X x, Y y, Z z, W w)
-            : data{static_cast<T>(x), static_cast<T>(y), static_cast<T>(z), static_cast<T>(w)}
-        {
-        }
-
-        template <typename X, typename Y, typename Z, typename W, AMAL_CONSTRUCT_NOSIMD>
+        template <typename X, typename Y, typename Z, typename W>
         inline constexpr vec(X x, Y y, Z z, W w)
             : data{static_cast<T>(x), static_cast<T>(y), static_cast<T>(z), static_cast<T>(w)}
         {
@@ -102,4 +80,20 @@ namespace amal
         {
         }
     };
+
+    namespace details
+    {
+        template <typename T, enum Pack P>
+        inline constexpr AMAL_NVEC(4) create_by_call(AMAL_NVEC(4) const &v, T (*call)(T))
+        {
+            return AMAL_NVEC(4)(call(v.x), call(v.y), call(v.z), call(v.w));
+        }
+
+        template <typename T, enum Pack P>
+        inline constexpr AMAL_NVEC(4)
+            create_by_call(AMAL_NVEC(4) const &v1, AMAL_NVEC(4) const &v2, T (*call)(T, T)) noexcept
+        {
+            return AMAL_NVEC(4)(call(v1.x, v2.x), call(v1.y, v2.y), call(v1.z, v2.z), call(v1.w, v2.w));
+        }
+    } // namespace details
 } // namespace amal

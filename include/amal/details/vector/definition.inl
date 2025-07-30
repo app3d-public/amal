@@ -1,8 +1,12 @@
 constexpr vec() = default;
-constexpr vec(vec const &) = default;
+constexpr vec(const vec &rhs) noexcept = default;
+constexpr vec(vec &&) noexcept = default;
+constexpr vec &operator=(vec &&) noexcept = default;
 
-template <AMAL_CONSTRUCT_SIMD>
-constexpr explicit vec(typename V::value_type simd) noexcept : s(simd)
+template <
+    typename V,
+    std::enable_if_t<std::is_same<V, typename simd_type::value_type>::value && details::is_simd_enabled_v<V>, int> = 0>
+constexpr explicit vec(V simd) noexcept : s(simd)
 {
 }
 

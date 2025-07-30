@@ -5,7 +5,7 @@
 
 namespace amal
 {
-    template <typename T, enum Pack P>
+    template <typename T, Pack P>
     struct vec<2, T, P>
     {
         using value_type = T;
@@ -78,4 +78,20 @@ namespace amal
         {
         }
     };
+
+    namespace details
+    {
+        template <typename T, enum Pack P>
+        inline constexpr AMAL_NVEC(2) create_by_call(AMAL_NVEC(2) const &v, T (*call)(T))
+        {
+            return AMAL_NVEC(2)(call(v.x), call(v.y));
+        }
+
+        template <typename T, enum Pack P>
+        inline constexpr AMAL_NVEC(2)
+            create_by_call(AMAL_NVEC(2) const &v1, AMAL_NVEC(2) const &v2, T (*call)(T, T)) noexcept
+        {
+            return AMAL_NVEC(2)(call(v1.x, v2.x), call(v1.y, v2.y));
+        }
+    } // namespace details
 } // namespace amal

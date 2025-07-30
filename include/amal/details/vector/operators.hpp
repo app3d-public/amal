@@ -6,14 +6,14 @@
 
 namespace amal
 {
-    template <length_t N, typename T, enum Pack P, typename U>
+    template <length_t N, typename T, Pack P, typename U>
     inline constexpr AMAL_VEC_REF_SIMD operator+=(AMAL_VEC_SELF &lhs, U scalar)
     {
         lhs.s += static_cast<T>(scalar);
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, typename U>
+    template <length_t N, typename T, Pack P, typename U>
     inline constexpr AMAL_VEC_REF_NOSIMD operator+=(AMAL_VEC_SELF &lhs, U scalar)
     {
         lhs.x += static_cast<T>(scalar);
@@ -23,14 +23,14 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_REF_SIMD operator+=(AMAL_VEC_SELF &lhs, AMAL_VEC_SELF const &rhs)
     {
         lhs.s += rhs.s;
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, length_t NB, typename TB, enum Pack PB>
+    template <length_t N, typename T, Pack P, length_t NB, typename TB, Pack PB>
     inline constexpr AMAL_VEC_REF_NOSIMD operator+=(AMAL_VEC_SELF &lhs, AMAL_VEC(NB, TB, PB) const &rhs)
     {
         lhs.x += static_cast<T>(rhs.x);
@@ -43,14 +43,14 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, typename U>
+    template <length_t N, typename T, Pack P, typename U>
     inline constexpr AMAL_VEC_REF_SIMD operator-=(AMAL_VEC_SELF &lhs, U scalar)
     {
         lhs.s -= static_cast<T>(scalar);
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, typename U>
+    template <length_t N, typename T, Pack P, typename U>
     inline constexpr AMAL_VEC_REF_NOSIMD operator-=(AMAL_VEC_SELF &lhs, U scalar)
     {
         lhs.x -= static_cast<T>(scalar);
@@ -60,14 +60,14 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_REF_SIMD operator-=(AMAL_VEC_SELF &lhs, AMAL_VEC_SELF const &rhs)
     {
         lhs.s -= rhs.s;
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, length_t NB, typename TB, enum Pack PB>
+    template <length_t N, typename T, Pack P, length_t NB, typename TB, Pack PB>
     inline constexpr AMAL_VEC_REF_NOSIMD operator-=(AMAL_VEC_SELF &lhs, AMAL_VEC(NB, TB, PB) const &rhs)
     {
         lhs.x -= static_cast<T>(rhs.x);
@@ -80,14 +80,14 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, typename U>
+    template <length_t N, typename T, Pack P, typename U>
     inline constexpr AMAL_VEC_REF_SIMD operator/=(AMAL_VEC_SELF &lhs, U scalar)
     {
         lhs.s /= static_cast<T>(scalar);
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, typename U>
+    template <length_t N, typename T, Pack P, typename U>
     inline constexpr AMAL_VEC_REF_NOSIMD operator/=(AMAL_VEC_SELF &lhs, U scalar)
     {
         lhs.x += static_cast<T>(scalar);
@@ -97,14 +97,14 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_REF_SIMD operator/=(AMAL_VEC_SELF &lhs, AMAL_VEC_SELF const &rhs)
     {
         lhs.s /= rhs.s;
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, length_t NB, typename TB, enum Pack PB>
+    template <length_t N, typename T, Pack P, length_t NB, typename TB, Pack PB>
     inline constexpr AMAL_VEC_REF_NOSIMD operator/=(AMAL_VEC_SELF &lhs, AMAL_VEC(NB, TB, PB) const &rhs)
     {
         lhs.x /= static_cast<T>(rhs.x);
@@ -117,14 +117,14 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, typename U>
+    template <length_t N, typename T, Pack P, typename U>
     inline constexpr AMAL_VEC_REF_SIMD operator*=(AMAL_VEC_SELF &lhs, U scalar)
     {
         lhs.s *= static_cast<T>(scalar);
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, typename U>
+    template <length_t N, typename T, Pack P, typename U>
     inline constexpr AMAL_VEC_REF_NOSIMD operator*=(AMAL_VEC_SELF &lhs, U scalar)
     {
         lhs.x *= static_cast<T>(scalar);
@@ -134,14 +134,14 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_REF_SIMD operator*=(AMAL_VEC_SELF &lhs, AMAL_VEC_SELF const &rhs)
     {
         lhs.s *= rhs.s;
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, length_t NB, typename TB, enum Pack PB>
+    template <length_t N, typename T, Pack P, length_t NB, typename TB, Pack PB>
     inline constexpr AMAL_VEC_REF_NOSIMD operator*=(AMAL_VEC_SELF &lhs, AMAL_VEC(NB, TB, PB) const &rhs)
     {
         lhs.x *= static_cast<T>(rhs.x);
@@ -154,19 +154,19 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF &operator++(AMAL_VEC_SELF &lhs)
     {
         return lhs += 1;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF &operator--(AMAL_VEC_SELF &lhs)
     {
         return lhs -= 1;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator++(AMAL_VEC_SELF &lhs, int)
     {
         vec tmp{lhs};
@@ -174,7 +174,7 @@ namespace amal
         return tmp;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator--(AMAL_VEC_SELF &lhs, int)
     {
         vec tmp{lhs};
@@ -182,7 +182,7 @@ namespace amal
         return tmp;
     }
 
-    template <length_t N, typename T, enum Pack P, typename U>
+    template <length_t N, typename T, Pack P, typename U>
     inline constexpr AMAL_VEC_SELF &operator%=(AMAL_VEC_SELF &lhs, U scalar)
     {
         if constexpr (std::is_integral_v<T>)
@@ -202,7 +202,7 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, length_t NB, typename TB, enum Pack PB>
+    template <length_t N, typename T, Pack P, length_t NB, typename TB, Pack PB>
     inline constexpr AMAL_VEC_SELF &operator%=(AMAL_VEC_SELF &lhs, AMAL_VEC(NB, TB, PB) const &rhs)
     {
         if constexpr (std::is_integral_v<T> && std::is_integral_v<TB>)
@@ -228,7 +228,7 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, typename U>
+    template <length_t N, typename T, Pack P, typename U>
     inline constexpr AMAL_VEC_SELF &operator&=(AMAL_VEC_SELF &lhs, U scalar)
     {
         if constexpr (std::is_integral_v<T>)
@@ -243,7 +243,7 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_REF_SIMD operator&=(AMAL_VEC_SELF &lhs, AMAL_VEC_SELF const &rhs)
     {
         if constexpr (std::is_integral_v<T>)
@@ -253,7 +253,7 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, length_t NB, typename TB, enum Pack PB>
+    template <length_t N, typename T, Pack P, length_t NB, typename TB, Pack PB>
     inline constexpr AMAL_VEC_SELF &operator&=(AMAL_VEC_SELF &lhs, AMAL_VEC(NB, TB, PB) const &rhs)
     {
         if constexpr (std::is_integral_v<T> && std::is_integral_v<TB>)
@@ -272,7 +272,7 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, typename U>
+    template <length_t N, typename T, Pack P, typename U>
     inline constexpr AMAL_VEC_SELF &operator|=(AMAL_VEC_SELF &lhs, U scalar)
     {
         if constexpr (std::is_integral_v<T>)
@@ -287,7 +287,7 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_REF_SIMD operator|=(AMAL_VEC_SELF &lhs, AMAL_VEC_SELF const &rhs)
     {
         if constexpr (std::is_integral_v<T> && std::is_integral_v<T>)
@@ -297,7 +297,7 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, length_t NB, typename TB, enum Pack PB>
+    template <length_t N, typename T, Pack P, length_t NB, typename TB, Pack PB>
     inline constexpr AMAL_VEC_SELF &operator|=(AMAL_VEC_SELF &lhs, AMAL_VEC(NB, TB, PB) const &rhs)
     {
         if constexpr (std::is_integral_v<T> && std::is_integral_v<T>)
@@ -316,7 +316,7 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, typename U>
+    template <length_t N, typename T, Pack P, typename U>
     inline constexpr AMAL_VEC_SELF &operator^=(AMAL_VEC_SELF &lhs, U scalar)
     {
         if constexpr (std::is_integral_v<T>)
@@ -331,7 +331,7 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_REF_SIMD operator^=(AMAL_VEC_SELF &lhs, AMAL_VEC_SELF const &rhs)
     {
         if constexpr (std::is_integral_v<T> && std::is_integral_v<T>)
@@ -341,7 +341,7 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, length_t NB, typename TB, enum Pack PB>
+    template <length_t N, typename T, Pack P, length_t NB, typename TB, Pack PB>
     inline constexpr AMAL_VEC_SELF &operator^=(AMAL_VEC_SELF &lhs, AMAL_VEC(NB, TB, PB) const &rhs)
     {
         if constexpr (std::is_integral_v<T> && std::is_integral_v<T>)
@@ -360,7 +360,7 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, typename U>
+    template <length_t N, typename T, Pack P, typename U>
     inline constexpr AMAL_VEC_SELF &operator<<=(AMAL_VEC_SELF &lhs, U scalar)
     {
         if constexpr (std::is_integral_v<T>)
@@ -375,7 +375,7 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_REF_SIMD operator<<=(AMAL_VEC_SELF &lhs, AMAL_VEC_SELF const &rhs)
     {
         if constexpr (std::is_integral_v<T> && std::is_integral_v<T>)
@@ -385,7 +385,7 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, length_t NB, typename TB, enum Pack PB>
+    template <length_t N, typename T, Pack P, length_t NB, typename TB, Pack PB>
     inline constexpr AMAL_VEC_SELF &operator<<=(AMAL_VEC_SELF &lhs, AMAL_VEC(NB, TB, PB) const &rhs)
     {
         if constexpr (std::is_integral_v<T> && std::is_integral_v<T>)
@@ -404,7 +404,7 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, typename U>
+    template <length_t N, typename T, Pack P, typename U>
     inline constexpr AMAL_VEC_SELF &operator>>=(AMAL_VEC_SELF &lhs, U scalar)
     {
         if constexpr (std::is_integral_v<T>)
@@ -419,7 +419,7 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_REF_SIMD operator>>=(AMAL_VEC_SELF &lhs, AMAL_VEC_SELF const &rhs)
     {
         if constexpr (std::is_integral_v<T> && std::is_integral_v<T>)
@@ -429,7 +429,7 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P, length_t NB, typename TB, enum Pack PB>
+    template <length_t N, typename T, Pack P, length_t NB, typename TB, Pack PB>
     inline constexpr AMAL_VEC_SELF &operator>>=(AMAL_VEC_SELF &lhs, AMAL_VEC(NB, TB, PB) const &rhs)
     {
         if constexpr (std::is_integral_v<T> && std::is_integral_v<T>)
@@ -448,236 +448,236 @@ namespace amal
         return lhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator+(AMAL_VEC_SELF const &rhs)
     {
         return rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator-(AMAL_VEC_SELF const &rhs)
     {
         AMAL_VEC_SELF tmp(0);
         return tmp -= rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator+(AMAL_VEC_SELF const &v, T scalar)
     {
         AMAL_VEC_SELF tmp(v);
         return tmp += scalar;
     }
 
-    template <length_t N, typename T, enum Pack P, length_t NB, typename TB, enum Pack PB>
+    template <length_t N, typename T, Pack P, length_t NB, typename TB, Pack PB>
     inline constexpr AMAL_VEC_SELF operator+(AMAL_VEC_SELF const &lhs, AMAL_VEC(NB, TB, PB) const &rhs)
     {
         AMAL_VEC_SELF tmp(lhs);
         return tmp += rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator+(T scalar, AMAL_VEC_SELF const &rhs)
     {
-        AMAL_VEC_SELF tmp(rhs);
-        return tmp += scalar;
+        AMAL_VEC_SELF tmp(scalar);
+        return scalar += rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator-(AMAL_VEC_SELF const &v, T scalar)
     {
         AMAL_VEC_SELF tmp(v);
         return tmp -= scalar;
     }
 
-    template <length_t N, typename T, enum Pack P, length_t NB, typename TB, enum Pack PB>
+    template <length_t N, typename T, Pack P, length_t NB, typename TB, Pack PB>
     inline constexpr AMAL_VEC_SELF operator-(AMAL_VEC_SELF const &lhs, AMAL_VEC(NB, TB, PB) const &rhs)
     {
         AMAL_VEC_SELF tmp(lhs);
         return tmp -= rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator-(T scalar, AMAL_VEC_SELF const &rhs)
     {
-        AMAL_VEC_SELF tmp(rhs);
-        return tmp -= scalar;
+        AMAL_VEC_SELF tmp(scalar);
+        return tmp -= rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator/(AMAL_VEC_SELF const &v, T scalar)
     {
         AMAL_VEC_SELF tmp(v);
         return v /= scalar;
     }
 
-    template <length_t N, typename T, enum Pack P, length_t NB, typename TB, enum Pack PB>
+    template <length_t N, typename T, Pack P, length_t NB, typename TB, Pack PB>
     inline constexpr AMAL_VEC_SELF operator/(AMAL_VEC_SELF const &lhs, AMAL_VEC(NB, TB, PB) const &rhs)
     {
         AMAL_VEC_SELF tmp(lhs);
         return tmp /= rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator/(T scalar, AMAL_VEC_SELF const &rhs)
     {
-        AMAL_VEC_SELF tmp(rhs);
-        return tmp /= scalar;
+        AMAL_VEC_SELF tmp(scalar);
+        return tmp /= rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator*(AMAL_VEC_SELF const &v, T scalar)
     {
         AMAL_VEC_SELF tmp(v);
-        return tmp -= scalar;
+        return tmp *= scalar;
     }
 
-    template <length_t N, typename T, enum Pack P, length_t NB, typename TB, enum Pack PB>
+    template <length_t N, typename T, Pack P, length_t NB, typename TB, Pack PB>
     inline constexpr AMAL_VEC_SELF operator*(AMAL_VEC_SELF const &lhs, AMAL_VEC(NB, TB, PB) const &rhs)
     {
         AMAL_VEC_SELF tmp(lhs);
-        return tmp -= rhs;
+        return tmp *= rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator*(T scalar, AMAL_VEC_SELF const &rhs)
     {
-        AMAL_VEC_SELF tmp(rhs);
-        return tmp -= scalar;
+        AMAL_VEC_SELF tmp(scalar);
+        return tmp *= rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator%(AMAL_VEC_SELF const &v, T scalar)
     {
         AMAL_VEC_SELF tmp(v);
         return tmp %= scalar;
     }
 
-    template <length_t N, typename T, enum Pack P, length_t NB, typename TB, enum Pack PB>
+    template <length_t N, typename T, Pack P, length_t NB, typename TB, Pack PB>
     inline constexpr AMAL_VEC_SELF operator%(AMAL_VEC_SELF const &lhs, AMAL_VEC(NB, TB, PB) const &rhs)
     {
         AMAL_VEC_SELF tmp(lhs);
         return tmp %= rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator%(T scalar, AMAL_VEC_SELF const &rhs)
     {
-        AMAL_VEC_SELF tmp(rhs);
-        return rhs %= scalar;
+        AMAL_VEC_SELF tmp(scalar);
+        return tmp %= scalar;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator&(AMAL_VEC_SELF const &v, T scalar)
     {
         AMAL_VEC_SELF tmp(v);
         return tmp &= scalar;
     }
 
-    template <length_t N, typename T, enum Pack P, length_t NB, typename TB, enum Pack PB>
+    template <length_t N, typename T, Pack P, length_t NB, typename TB, Pack PB>
     inline constexpr AMAL_VEC_SELF operator&(AMAL_VEC_SELF const &lhs, AMAL_VEC(NB, TB, PB) const &rhs)
     {
         AMAL_VEC_SELF tmp(lhs);
         return lhs &= rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator&(T scalar, AMAL_VEC_SELF const &rhs)
     {
-        AMAL_VEC_SELF tmp(rhs);
-        return tmp &= scalar;
+        AMAL_VEC_SELF tmp(scalar);
+        return tmp &= rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator|(AMAL_VEC_SELF const &v, T scalar)
     {
         AMAL_VEC_SELF tmp(v);
         return tmp |= scalar;
     }
 
-    template <length_t N, typename T, enum Pack P, length_t NB, typename TB, enum Pack PB>
+    template <length_t N, typename T, Pack P, length_t NB, typename TB, Pack PB>
     inline constexpr AMAL_VEC_SELF operator|(AMAL_VEC_SELF const &lhs, AMAL_VEC(NB, TB, PB) const &rhs)
     {
         AMAL_VEC_SELF tmp(lhs);
         return tmp |= rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator|(T scalar, AMAL_VEC_SELF const &rhs)
     {
-        AMAL_VEC_SELF tmp(rhs);
-        return tmp |= scalar;
+        AMAL_VEC_SELF tmp(scalar);
+        return tmp |= rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator^(AMAL_VEC_SELF const &v, T scalar)
     {
         AMAL_VEC_SELF tmp(v);
         return tmp ^= scalar;
     }
 
-    template <length_t N, typename T, enum Pack P, length_t NB, typename TB, enum Pack PB>
+    template <length_t N, typename T, Pack P, length_t NB, typename TB, Pack PB>
     inline constexpr AMAL_VEC_SELF operator^(AMAL_VEC_SELF const &lhs, AMAL_VEC(NB, TB, PB) const &rhs)
     {
         AMAL_VEC_SELF tmp(lhs);
         return tmp ^= rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator^(T scalar, AMAL_VEC_SELF const &rhs)
     {
-        AMAL_VEC_SELF tmp(rhs);
-        return tmp ^= scalar;
+        AMAL_VEC_SELF tmp(scalar);
+        return tmp ^= rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator<<(AMAL_VEC_SELF const &v, T scalar)
     {
         AMAL_VEC_SELF tmp(v);
         return tmp %= scalar;
     }
 
-    template <length_t N, typename T, enum Pack P, length_t NB, typename TB, enum Pack PB>
+    template <length_t N, typename T, Pack P, length_t NB, typename TB, Pack PB>
     inline constexpr AMAL_VEC_SELF operator<<(AMAL_VEC_SELF const &lhs, AMAL_VEC(NB, TB, PB) const &rhs)
     {
         AMAL_VEC_SELF tmp(lhs);
         return tmp %= rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator<<(T scalar, AMAL_VEC_SELF const &rhs)
     {
-        AMAL_VEC_SELF tmp(rhs);
-        return tmp %= scalar;
+        AMAL_VEC_SELF tmp(scalar);
+        return tmp %= rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator>>(AMAL_VEC_SELF const &v, T scalar)
     {
         AMAL_VEC_SELF tmp(v);
         return tmp %= scalar;
     }
 
-    template <length_t N, typename T, enum Pack P, length_t NB, typename TB, enum Pack PB>
+    template <length_t N, typename T, Pack P, length_t NB, typename TB, Pack PB>
     inline constexpr AMAL_VEC_SELF operator>>(AMAL_VEC_SELF const &lhs, AMAL_VEC(NB, TB, PB) const &rhs)
     {
         AMAL_VEC_SELF tmp(lhs);
         return tmp %= rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_SELF operator>>(T scalar, AMAL_VEC_SELF const &rhs)
     {
-        AMAL_VEC_SELF tmp(rhs);
-        return tmp %= scalar;
+        AMAL_VEC_SELF tmp(scalar);
+        return tmp %= rhs;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_VAL_SIMD operator~(AMAL_VEC_SELF const &v)
     {
         return AMAL_VEC_SELF(~v.s);
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr AMAL_VEC_VAL_NOSIMD operator~(AMAL_VEC_SELF const &v)
     {
         AMAL_VEC_SELF r;
@@ -688,7 +688,7 @@ namespace amal
         return r;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr bool operator==(AMAL_VEC_SELF const &lhs, AMAL_VEC_SELF const &rhs)
     {
         bool r = lhs.x == rhs.x && lhs.y == rhs.y;
@@ -697,19 +697,19 @@ namespace amal
         return r;
     }
 
-    template <length_t N, typename T, enum Pack P>
+    template <length_t N, typename T, Pack P>
     inline constexpr bool operator!=(AMAL_VEC_SELF const &lhs, AMAL_VEC_SELF const &rhs)
     {
         return !(lhs == rhs);
     }
 
-    template <length_t N, enum Pack P>
+    template <length_t N, Pack P>
     inline constexpr AMAL_BVEC_VAL_SIMD operator||(AMAL_BVEC const &lhs, AMAL_BVEC const &rhs)
     {
         return AMAL_BVEC(lhs.s | rhs.s);
     }
 
-    template <length_t N, enum Pack P>
+    template <length_t N, Pack P>
     inline constexpr AMAL_BVEC_VAL_NOSIMD operator||(AMAL_BVEC const &lhs, AMAL_BVEC const &rhs)
     {
         AMAL_BVEC r;

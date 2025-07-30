@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <cstdint>
 #include <cstring>
 
 #if defined(__F16C__)
@@ -39,7 +40,7 @@ namespace amal
                 hbits |= ((exp + 13) << 10);
             }
             T ival, frac = std::modf(value, &ival);
-            int m = abs(static_cast<int>(ival));
+            int m = std::abs(static_cast<int>(ival));
             return round(hbits + (m >> 1), m & 1, frac != T());
         }
 
@@ -79,7 +80,7 @@ namespace amal
 #else
             const uint32 sign = uint32(value & 0x8000) << 16;
             uint32 exp_h = (value & 0x7C00) >> 10;
-            uint32 mant_h = value & 0x03FF; // bits  9‑0
+            uint32 mant_h = value & 0x03FF;
             uint32 fbits;
 
             if (exp_h == 0) // zero / denorm
