@@ -4,7 +4,7 @@
 
 namespace amal
 {
-    template <typename T, enum Pack P>
+    template <typename T, bool aligned>
     inline AMAL_NVEC(2) screen_to_ndc(const AMAL_NVEC(2) & screen, int x, int y)
     {
         T x_ndc = (screen.x / x) * static_cast<T>(2) - static_cast<T>(1);

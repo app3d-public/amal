@@ -1,0 +1,104 @@
+#pragma once
+
+#include <internal/fwd/matrix.hpp>
+#include <vec{{ C }}.hpp>
+{% if C != R %}
+#include <vec{{ R }}.hpp>
+{% endif %}
+#include <cassert>
+
+namespace amal
+{
+    template <typename T, bool aligned>
+    struct mat <{{C}}, {{R}}, T, aligned>
+    {
+        using value_type = T;
+        using row_type = AMAL_NVEC({{R}});
+        using column_type = AMAL_NVEC({{C}});
+        using simd_type = typename column_type::simd_type;
+
+        column_type data[{{C}}];
+
+        static constexpr length_t length() { return {{C}}; }
+        constexpr column_type &operator[](length_t i) noexcept
+        {
+            assert(i < {{C}});
+            return data[i];
+        }
+        constexpr column_type const &operator[](length_t i) const noexcept
+        {
+            assert(i < {{C}});
+            return data[i];
+        }
+
+        constexpr mat() noexcept = default;
+        constexpr mat(mat const &) noexcept = default;
+        // clang-format off
+        constexpr mat(T scalar)
+            : data{
+        {%- for line in scalar_constructor_init %}
+                {{ line }}{{ "," if not loop.last else "" }}
+        {%- endfor %}
+            }
+        {}
+
+
+        constexpr mat({{ members_constructor_args }})
+            : data{
+        {%- for line in members_constructor_init %}
+                {{ line }}{{ "," if not loop.last else "" }}
+        {%- endfor %}
+            }
+        {}
+
+
+        // clang-format on
+
+        template <typename V, std::enable_if_t<std::is_same_v<V, typename simd_type::value_type> &&
+                internal::is_simd_enabled_v<V>, int> = 0>
+        constexpr mat(V const (&s)[{{ C }}]) noexcept
+            : data{
+                {% for i in range(C) -%}
+                column_type(s[{{ i }}]){{ "," if not loop.last else "" }}
+                {% endfor %}
+            }
+        {
+        }
+
+        // clang-format off
+        {%- for key, code in conversion_map.items() %}
+            {%- set src_c, src_r = key %}
+            {%- if src_c == C and src_r == R %}
+        template <typename U, bool A>
+        constexpr mat(AMAL_MAT({{ C }}, {{ R }}, U, A) const &m) noexcept
+            : data{
+        {%- for line in code %}
+                {{ line }}{{ "," if not loop.last else "" }}
+        {%- endfor %}
+            }
+        {}
+        {{ "" }}
+            {%- else %}
+        constexpr mat(AMAL_NMAT({{ src_c }}, {{ src_r }}) const &m) noexcept
+            : data{
+        {%- for line in code %}
+                {{ line }}{{ "," if not loop.last else "" }}
+        {%- endfor %}
+            }
+        {}
+        {{ "" }}
+            {%- endif %}
+        {%- endfor %}
+        // clang-format on
+
+        template <typename U>
+        constexpr mat &operator=(AMAL_MAT({{ C }}, {{ R }}, U, aligned) const &m)
+        {
+        {%- for i in range(C) %}
+            data[{{ i }}] = m.data[{{ i }}];
+        {%- endfor %}
+            return *this;
+        }
+    };
+
+} // namespace amal

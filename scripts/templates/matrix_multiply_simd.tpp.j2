@@ -1,0 +1,8 @@
+template<>
+inline void multiply_matrix<{{C1}}, {{R1}}, {{C2}}, {{R2}}>({{type}} const (&m1)[{{C1}}],
+    {{type}} const (&m2)[{{C2}}], {{type}} (&out)[{{C2}}])
+{
+{%- for line in implementation %}
+        {{ line }}
+{%- endfor %}
+}

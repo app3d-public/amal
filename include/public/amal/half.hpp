@@ -1,29 +1,29 @@
 #pragma once
 
-#include "details/half.hpp"
+#include "internal/half.hpp"
 
 namespace amal
 {
     struct half
     {
-        details::uint16 data;
+        internal::uint16 data;
 
         constexpr half() : data(0) {};
 
-        constexpr explicit half(details::uint16 rhs) : data(rhs) {}
+        constexpr explicit half(internal::uint16 rhs) : data(rhs) {}
 
         template <
             class T,
-            std::enable_if_t<std::is_arithmetic_v<T> && !std::is_same_v<std::remove_cv_t<T>, details::uint16>, int> = 0>
-        constexpr half(T v) noexcept : data(static_cast<details::uint16>(details::float_to_half(static_cast<float>(v))))
+            std::enable_if_t<std::is_arithmetic_v<T> && !std::is_same_v<std::remove_cv_t<T>, internal::uint16>, int> = 0>
+        constexpr half(T v) noexcept : data(static_cast<internal::uint16>(internal::float_to_half(static_cast<float>(v))))
         {
         }
 
-        constexpr operator float() const { return details::half_to_float(data); }
+        constexpr operator float() const { return internal::half_to_float(data); }
 
         constexpr half &operator=(float rhs)
         {
-            data = static_cast<details::uint16>(details::float_to_half(rhs));
+            data = static_cast<internal::uint16>(internal::float_to_half(rhs));
             return *this;
         }
 
@@ -35,8 +35,8 @@ namespace amal
         constexpr half &operator-=(float rhs) { return *this = *this - rhs; }
         constexpr half &operator*=(float rhs) { return *this = *this * rhs; }
         constexpr half &operator/=(float rhs) { return *this = *this / rhs; }
-        half &operator++() { return *this = *this + half(static_cast<details::uint16>(0x3C00)); }
-        half &operator--() { return *this = *this + half(static_cast<details::uint16>(0xBC00)); }
+        half &operator++() { return *this = *this + half(static_cast<internal::uint16>(0x3C00)); }
+        half &operator--() { return *this = *this + half(static_cast<internal::uint16>(0xBC00)); }
 
         half operator++(int)
         {
@@ -55,63 +55,63 @@ namespace amal
 
     inline constexpr bool operator==(half x, half y)
     {
-        return !details::compsignal(x.data, y.data) && (x.data == y.data || !((x.data | y.data) & 0x7FFF));
+        return !internal::compsignal(x.data, y.data) && (x.data == y.data || !((x.data | y.data) & 0x7FFF));
     }
 
     inline constexpr bool operator!=(half x, half y)
     {
-        return details::compsignal(x.data, y.data) || (x.data != y.data && ((x.data | y.data) & 0x7FFF));
+        return internal::compsignal(x.data, y.data) || (x.data != y.data && ((x.data | y.data) & 0x7FFF));
     }
 
     inline constexpr bool operator<(half x, half y)
     {
-        return !details::compsignal(x.data, y.data) &&
+        return !internal::compsignal(x.data, y.data) &&
                ((x.data ^ (0x8000 | (0x8000 - (x.data >> 15)))) + (x.data >> 15)) <
                    ((y.data ^ (0x8000 | (0x8000 - (y.data >> 15)))) + (y.data >> 15));
     }
 
     inline constexpr bool operator>(half x, half y)
     {
-        return !details::compsignal(x.data, y.data) &&
+        return !internal::compsignal(x.data, y.data) &&
                ((x.data ^ (0x8000 | (0x8000 - (x.data >> 15)))) + (x.data >> 15)) >
                    ((y.data ^ (0x8000 | (0x8000 - (y.data >> 15)))) + (y.data >> 15));
     }
 
     inline constexpr bool operator<=(half x, half y)
     {
-        return !details::compsignal(x.data, y.data) &&
+        return !internal::compsignal(x.data, y.data) &&
                ((x.data ^ (0x8000 | (0x8000 - (x.data >> 15)))) + (x.data >> 15)) <=
                    ((y.data ^ (0x8000 | (0x8000 - (y.data >> 15)))) + (y.data >> 15));
     }
 
     inline constexpr bool operator>=(half x, half y)
     {
-        return !details::compsignal(x.data, y.data) &&
+        return !internal::compsignal(x.data, y.data) &&
                ((x.data ^ (0x8000 | (0x8000 - (x.data >> 15)))) + (x.data >> 15)) >=
                    ((y.data ^ (0x8000 | (0x8000 - (y.data >> 15)))) + (y.data >> 15));
     }
 
     inline constexpr half operator+(half arg) { return arg; }
-    inline constexpr half operator-(half arg) { return half(static_cast<details::uint16>(arg.data ^ 0x8000)); }
+    inline constexpr half operator-(half arg) { return half(static_cast<internal::uint16>(arg.data ^ 0x8000)); }
     inline constexpr half operator+(half x, half y) { return half(static_cast<float>(x) + static_cast<float>(y)); }
     inline constexpr half operator-(half x, half y) { return half(static_cast<float>(x) - static_cast<float>(y)); }
     inline constexpr half operator*(half x, half y) { return half(static_cast<float>(x) * static_cast<float>(y)); }
     inline constexpr half operator/(half x, half y) { return half(static_cast<float>(x) / static_cast<float>(y)); }
 
-    inline constexpr half fabs(half arg) { return half(static_cast<details::uint16>(arg.data & 0x7FFF)); }
+    inline constexpr half fabs(half arg) { return half(static_cast<internal::uint16>(arg.data & 0x7FFF)); }
     inline constexpr half abs(half arg) { return fabs(arg); }
 
     inline half fmod(half x, half y)
     {
         unsigned int absx = x.data & 0x7FFF, absy = y.data & 0x7FFF, sign = x.data & 0x8000;
         if (absx >= 0x7C00 || absy >= 0x7C00)
-            return half(static_cast<details::uint16>((absx > 0x7C00 || absy > 0x7C00) ? details::signal(x.data, y.data)
+            return half(static_cast<internal::uint16>((absx > 0x7C00 || absy > 0x7C00) ? internal::signal(x.data, y.data)
                                                      : (absx == 0x7C00)               ? AMAL_HALF_INVALID
                                                                                       : x.data));
-        if (!absy) return half(static_cast<details::uint16>(AMAL_HALF_INVALID));
+        if (!absy) return half(static_cast<internal::uint16>(AMAL_HALF_INVALID));
         if (!absx) return x;
-        if (absx == absy) return half(static_cast<details::uint16>(sign));
-        return half(static_cast<details::uint16>(sign | details::mod<false, false>(absx, absy)));
+        if (absx == absy) return half(static_cast<internal::uint16>(sign));
+        return half(static_cast<internal::uint16>(sign | internal::mod<false, false>(absx, absy)));
     }
 
     inline constexpr half exp(half arg) { return half(std::exp(static_cast<float>(arg))); }
@@ -227,32 +227,32 @@ namespace std
         static constexpr int min_exponent10 = -4;
         static constexpr int max_exponent = 16;
         static constexpr int max_exponent10 = 4;
-        static constexpr amal::half min() noexcept { return amal::half(static_cast<amal::details::uint16>(0x0400)); }
-        static constexpr amal::half lowest() noexcept { return amal::half(static_cast<amal::details::uint16>(0xFBFF)); }
-        static constexpr amal::half max() noexcept { return amal::half(static_cast<amal::details::uint16>(0x7BFF)); }
+        static constexpr amal::half min() noexcept { return amal::half(static_cast<amal::internal::uint16>(0x0400)); }
+        static constexpr amal::half lowest() noexcept { return amal::half(static_cast<amal::internal::uint16>(0xFBFF)); }
+        static constexpr amal::half max() noexcept { return amal::half(static_cast<amal::internal::uint16>(0x7BFF)); }
         static constexpr amal::half epsilon() noexcept
         {
-            return amal::half(static_cast<amal::details::uint16>(0x1400));
+            return amal::half(static_cast<amal::internal::uint16>(0x1400));
         }
         static constexpr amal::half round_error() noexcept
         {
-            return amal::half(static_cast<amal::details::uint16>(0x3800));
+            return amal::half(static_cast<amal::internal::uint16>(0x3800));
         }
         static constexpr amal::half infinity() noexcept
         {
-            return amal::half(static_cast<amal::details::uint16>(0x7C00));
+            return amal::half(static_cast<amal::internal::uint16>(0x7C00));
         }
         static constexpr amal::half quiet_NaN() noexcept
         {
-            return amal::half(static_cast<amal::details::uint16>(0x7FFF));
+            return amal::half(static_cast<amal::internal::uint16>(0x7FFF));
         }
         static constexpr amal::half signaling_NaN() noexcept
         {
-            return amal::half(static_cast<amal::details::uint16>(0x7DFF));
+            return amal::half(static_cast<amal::internal::uint16>(0x7DFF));
         }
         static constexpr amal::half denorm_min() noexcept
         {
-            return amal::half(static_cast<amal::details::uint16>(0x0001));
+            return amal::half(static_cast<amal::internal::uint16>(0x0001));
         }
     };
 } // namespace std

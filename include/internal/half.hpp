@@ -14,7 +14,7 @@
 
 namespace amal
 {
-    namespace details
+    namespace internal
     {
         typedef std::uint_least16_t uint16;
         typedef std::uint_fast32_t uint32;
@@ -188,5 +188,5 @@ namespace amal
         }
 
         inline uint32 arithmetic_shift(uint32 arg, int i) { return static_cast<int32>(arg) >> i; }
-    } // namespace details
+    } // namespace internal
 } // namespace amal

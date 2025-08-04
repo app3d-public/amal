@@ -1,13 +1,13 @@
-#include <benchmark/benchmark.h>
-#include <glm/glm.hpp>
-#include "amal/geometric.hpp"
-#include "amal/vector.hpp"
+#include <amal/matrix.hpp>
+#include <cstdio>
+#include <typeinfo>
 
 int main()
 {
-    amal::vec4 v{1.0f, 2.0f, 3.0f, 4.0f};
-    amal::vec4 r = amal::normalize(v);
-    printf("r.x = %f, r.y = %f, r.z = %f, r.w = %f\n", r.x, r.y, r.z, r.w);
-
+    amal::mat2x2 m1{1, 2, 3, 4};
+    printf("simd type: %s\n", typeid(typename amal::mat2x2_aligned::simd_type::value_type).name());
+    amal::mat2x2 m2{5, 6, 7, 8};
+    auto m3 = m1 * m2;
+    printf("%f %f %f %f\n", m3[0][0], m3[0][1], m3[1][0], m3[1][1]);
     return 0;
 }
