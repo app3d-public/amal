@@ -5,7 +5,6 @@
 #include "../type_info.hpp"
 #include "functions.hpp"
 
-
 #define AMAL_MATRIX_TEMP_DECL length_t C, length_t R, typename T, bool aligned
 
 namespace amal
@@ -484,9 +483,9 @@ namespace amal
     }
 
 #if defined(AMAL_FMA_ENABLE)
-    #include <matrix_multiply_fma.hpp>
+    #include <amal/internal/matrix_multiply_fma.hpp>
 #else
-    #include <matrix_multiply_linear.hpp>
+    #include <amal/internal/matrix_multiply_linear.hpp>
 #endif
 
     template <length_t R, typename T, bool aligned>

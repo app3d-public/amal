@@ -4,32 +4,9 @@ import sys
 
 from jinja2 import Template
 
-
-def scalar_constructor(c, r):
-    lines = []
-    for i in range(c):
-        values = ["scalar" if j == i else "0" for j in range(r)]
-        lines.append(f"column_type({', '.join(values)})")
-    return lines
-
 swizzle = ['x', 'y', 'z', 'w']
 
-def members_constructor_args(c, r):
-    args = []
-    for j in range(c):
-        for i in range(r):
-            args.append(f"T const& {swizzle[i]}{j}")
-    return ",\n        ".join(args)
-
-def members_constructor_init(c, r):
-    swizzle = ['x', 'y', 'z', 'w']
-    lines = []
-    for j in range(c):
-        elems = [f"{swizzle[i]}{j}" for i in range(r)]
-        lines.append(f"column_type({', '.join(elems)})")
-    return lines
-
-def format_column(col, src_c, src_r, dst_c, dst_r):
+def format_column(col, src_c, src_r, dst_r):
     if col < src_c:
         if src_r == dst_r:
             return f"column_type(m.data[{col}])"
@@ -53,7 +30,7 @@ def make_matrix_conversion_map(dst_c, dst_r):
 
             columns = []
             for col in range(dst_c):
-                columns.append(format_column(col, src_c, src_r, dst_c, dst_r))
+                columns.append(format_column(col, src_c, src_r, dst_r))
             result[(src_c, src_r)] = columns
     return result
 
@@ -72,9 +49,6 @@ def main():
     keys = {
         "C": C,
         "R": R,
-        "scalar_constructor_init": scalar_constructor(C, R),
-        "members_constructor_args": members_constructor_args(C, R),
-        "members_constructor_init": members_constructor_init(C, R),
         "conversion_map": make_matrix_conversion_map(C, R)
     }
     print(template.render(**keys))

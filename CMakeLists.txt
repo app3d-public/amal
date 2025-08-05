@@ -10,18 +10,12 @@ add_library(${PROJECT_NAME} INTERFACE)
 
 target_include_directories(${PROJECT_NAME}
     INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/public>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/scripts>
     $<INSTALL_INTERFACE:include>
 )
 
-# Internal
-add_library(amal_internal INTERFACE)
-add_dependencies(amal_internal amal_generated_headers)
-target_include_directories(amal_internal INTERFACE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_BINARY_DIR}/scripts
-    )
-target_link_libraries(${PROJECT_NAME} INTERFACE amal_internal)
+add_dependencies(${PROJECT_NAME} amal_generated_headers)
 
 set_target_properties(${PROJECT_NAME}
     PROPERTIES

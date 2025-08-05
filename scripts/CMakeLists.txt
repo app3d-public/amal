@@ -8,7 +8,7 @@ set(VECTOR_TEMPLATE "${CMAKE_CURRENT_SOURCE_DIR}/templates/vector.tpp.j2")
 set(GENERATED_HEADERS "")
 
 foreach(C RANGE 2 4)
-    set(VECTOR_OUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/vec${C}.hpp")
+    set(VECTOR_OUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/amal/internal/vec${C}.hpp")
 
     add_custom_command(
         OUTPUT ${VECTOR_OUT_FILE}
@@ -21,7 +21,7 @@ foreach(C RANGE 2 4)
     list(APPEND GENERATED_HEADERS ${VECTOR_OUT_FILE} ${MATRIX_OUT_FILE})
 
     foreach(R RANGE 2 4)
-        set(MATRIX_OUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/mat${C}x${R}.hpp")
+        set(MATRIX_OUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/amal/internal/mat${C}x${R}.hpp")
 
         add_custom_command(
             OUTPUT ${MATRIX_OUT_FILE}
@@ -51,7 +51,7 @@ set(MULTIPLY_SIMD_SCRIPTS
 
 foreach(PY_SCRIPT IN LISTS MULTIPLY_NOSIMD_SCRIPTS)
     get_filename_component(SCRIPT_NAME ${PY_SCRIPT} NAME_WE)
-    set(OUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/${SCRIPT_NAME}.hpp")
+    set(OUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/amal/internal/${SCRIPT_NAME}.hpp")
 
     add_custom_command(
         OUTPUT ${OUT_FILE}
@@ -65,7 +65,7 @@ endforeach()
 
 foreach(PY_SCRIPT IN LISTS MULTIPLY_SIMD_SCRIPTS)
     get_filename_component(SCRIPT_NAME ${PY_SCRIPT} NAME_WE)
-    set(OUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/${SCRIPT_NAME}.hpp")
+    set(OUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/amal/internal/${SCRIPT_NAME}.hpp")
 
     add_custom_command(
         OUTPUT ${OUT_FILE}

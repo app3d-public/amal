@@ -1,9 +1,9 @@
 #pragma once
 
-#include <internal/fwd/matrix.hpp>
-#include <vec{{ C }}.hpp>
+#include <amal/internal/fwd/matrix.hpp>
+#include <amal/internal/vec{{ C }}.hpp>
 {% if C != R %}
-#include <vec{{ R }}.hpp>
+#include <amal/internal/vec{{ R }}.hpp>
 {% endif %}
 #include <cassert>
 
@@ -33,26 +33,32 @@ namespace amal
 
         constexpr mat() noexcept = default;
         constexpr mat(mat const &) noexcept = default;
-        // clang-format off
         constexpr mat(T scalar)
             : data{
-        {%- for line in scalar_constructor_init %}
-                {{ line }}{{ "," if not loop.last else "" }}
+            {%- for i in range(C) %}
+                    column_type({%- for j in range(R) %}{{ "scalar" if j == i else "0" }}{{ ", " if j < R - 1 }}
+                    {%- endfor %}){{"," if not loop.last}}
+            {%- endfor %} } {}
+
+        {% set swizzle = "xyzw" %}
+        constexpr mat(
+        {%- for j in range(C) %}
+            {%- for i in range(R) %}
+                T const& {{ swizzle[i] }}{{ j }}{{ "," if not (i == R-1 and j == C-1) }}
+            {%- endfor %}
         {%- endfor %}
-            }
-        {}
-
-
-        constexpr mat({{ members_constructor_args }})
-            : data{
-        {%- for line in members_constructor_init %}
-                {{ line }}{{ "," if not loop.last else "" }}
+                ): data{
+        {%- for j in range(C) %}
+                    column_type({%- for i in range(R) %}{{ swizzle[i] }}{{ j }}{{ ", " if i < R-1 }}
+                    {%- endfor %}){{ "," if not loop.last }}
         {%- endfor %}
-            }
-        {}
+                    } {}
 
-
-        // clang-format on
+        constexpr mat(
+        {%- for j in range(C) %}
+                    {{ "AMAL_NVEC(" ~ R ~ ")" }} const& c{{ j }}{{ "," if not loop.last }}
+        {%- endfor %}
+                ): data{ {%- for j in range(C) %} c{{ j }}{{ "," if not loop.last }}{%- endfor %} } {}
 
         template <typename V, std::enable_if_t<std::is_same_v<V, typename simd_type::value_type> &&
                 internal::is_simd_enabled_v<V>, int> = 0>
@@ -60,12 +66,8 @@ namespace amal
             : data{
                 {% for i in range(C) -%}
                 column_type(s[{{ i }}]){{ "," if not loop.last else "" }}
-                {% endfor %}
-            }
-        {
-        }
+                {% endfor %} } {}
 
-        // clang-format off
         {%- for key, code in conversion_map.items() %}
             {%- set src_c, src_r = key %}
             {%- if src_c == C and src_r == R %}
@@ -75,8 +77,7 @@ namespace amal
         {%- for line in code %}
                 {{ line }}{{ "," if not loop.last else "" }}
         {%- endfor %}
-            }
-        {}
+            } {}
         {{ "" }}
             {%- else %}
         constexpr mat(AMAL_NMAT({{ src_c }}, {{ src_r }}) const &m) noexcept
@@ -84,12 +85,10 @@ namespace amal
         {%- for line in code %}
                 {{ line }}{{ "," if not loop.last else "" }}
         {%- endfor %}
-            }
-        {}
+            } {}
         {{ "" }}
             {%- endif %}
         {%- endfor %}
-        // clang-format on
 
         template <typename U>
         constexpr mat &operator=(AMAL_MAT({{ C }}, {{ R }}, U, aligned) const &m)

@@ -11,9 +11,9 @@ namespace amal
         template <int C1, int R1, int C2, int R2, typename T>
         inline void multiply_matrix(T const (&m1)[C1], T const (&m2)[C2], T (&out)[C2]);
 
-    #include <matrix_multiply_v4sf.hpp>
+    #include <amal/internal/matrix_multiply_v4sf.hpp>
 
-        template <length_t C, length_t R>
+        template <length_t C>
         inline __v4sf multiply_matrix(__v4sf const (&m)[C], __v4sf const &v)
         {
             __v4sf result;
@@ -300,6 +300,105 @@ namespace amal
             out[3] = _mm_mul_ps(out[3], rdet);
         }
 
+    #if defined(AMAL_FMA_ENABLE)
+        #define AMAL_FMA_ADD(a, b, c) _mm_fmadd_ps((a), (b), (c))
+    #else
+        #define AMAL_FMA_ADD(a, b, c) _mm_add_ps(_mm_mul_ps((a), (b)), (c))
+    #endif
+
+        inline void rotate(__v4sf const (&m)[4], float angle, __v4sf const &axis4, __v4sf (&out)[4])
+        {
+            float c = cosf(angle);
+            float s = sinf(angle);
+
+            __m128 one = _mm_set1_ps(1.0f);
+            __m128 vc = _mm_set1_ps(c);
+            __m128 vs = _mm_set1_ps(s);
+
+            __m128 axis = axis4;
+            __m128 len2 = _mm_dp_ps(axis, axis, 0x7F);
+            axis = _mm_mul_ps(axis, _mm_rsqrt_ps(len2));
+
+            __m128 ic = _mm_sub_ps(one, vc);
+            __m128 zero = _mm_setzero_ps();
+
+            __m128 ax = _mm_shuffle_ps(axis, axis, _MM_SHUFFLE(0, 0, 0, 0));
+            __m128 ay = _mm_shuffle_ps(axis, axis, _MM_SHUFFLE(1, 1, 1, 1));
+            __m128 az = _mm_shuffle_ps(axis, axis, _MM_SHUFFLE(2, 2, 2, 2));
+
+            __m128 ax_ax = _mm_mul_ps(ax, ax);
+            __m128 ax_ay = _mm_mul_ps(ax, ay);
+            __m128 ax_az = _mm_mul_ps(ax, az);
+            __m128 ay_ay = _mm_mul_ps(ay, ay);
+            __m128 ay_az = _mm_mul_ps(ay, az);
+            __m128 az_az = _mm_mul_ps(az, az);
+
+            __m128 ic_ax_ax = _mm_mul_ps(ic, ax_ax);
+            __m128 ic_ax_ay = _mm_mul_ps(ic, ax_ay);
+            __m128 ic_ax_az = _mm_mul_ps(ic, ax_az);
+            __m128 ic_ay_ay = _mm_mul_ps(ic, ay_ay);
+            __m128 ic_ay_az = _mm_mul_ps(ic, ay_az);
+            __m128 ic_az_az = _mm_mul_ps(ic, az_az);
+
+            __m128 r00 = AMAL_FMA_ADD(ic_ax_ax, one, vc);
+            __m128 r01 = AMAL_FMA_ADD(ic_ax_ay, one, AMAL_FMA_ADD(vs, az, zero));
+            __m128 r02 = AMAL_FMA_ADD(ic_ax_az, one, AMAL_FMA_ADD(_mm_sub_ps(zero, vs), ay, zero));
+
+            __m128 r10 = AMAL_FMA_ADD(ic_ax_ay, one, AMAL_FMA_ADD(_mm_sub_ps(zero, vs), az, zero));
+            __m128 r11 = AMAL_FMA_ADD(ic_ay_ay, one, vc);
+            __m128 r12 = AMAL_FMA_ADD(ic_ay_az, one, AMAL_FMA_ADD(vs, ax, zero));
+
+            __m128 r20 = AMAL_FMA_ADD(ic_ax_az, one, AMAL_FMA_ADD(vs, ay, zero));
+            __m128 r21 = AMAL_FMA_ADD(ic_ay_az, one, AMAL_FMA_ADD(_mm_sub_ps(zero, vs), ax, zero));
+            __m128 r22 = AMAL_FMA_ADD(ic_az_az, one, vc);
+
+            out[0] = AMAL_FMA_ADD(m[2], r02, AMAL_FMA_ADD(m[1], r01, _mm_mul_ps(m[0], r00)));
+            out[1] = AMAL_FMA_ADD(m[2], r12, AMAL_FMA_ADD(m[1], r11, _mm_mul_ps(m[0], r10)));
+            out[2] = AMAL_FMA_ADD(m[2], r22, AMAL_FMA_ADD(m[1], r21, _mm_mul_ps(m[0], r20)));
+
+            out[3] = m[3];
+        }
+
+        inline void scale(__v4sf const (&in)[4], __v4sf const &v, __v4sf (&out)[4])
+        {
+            out[0] = _mm_mul_ps(in[0], _mm_shuffle_ps(v, v, _MM_SHUFFLE(0, 0, 0, 0)));
+            out[1] = _mm_mul_ps(in[1], _mm_shuffle_ps(v, v, _MM_SHUFFLE(1, 1, 1, 1)));
+            out[2] = _mm_mul_ps(in[2], _mm_shuffle_ps(v, v, _MM_SHUFFLE(2, 2, 2, 2)));
+            out[3] = in[3];
+        }
+
+        inline void shear(__v4sf const (&in)[4], __v4sf const &point, __v4sf const &lxy_lxz, __v4sf const &lyx_lyz,
+                          __v4sf const &lzx_lzy, __v4sf (&out)[4])
+        {
+            float lambda_xy = lxy_lxz[0], lambda_xz = lxy_lxz[1];
+            float lambda_yx = lyx_lyz[0], lambda_yz = lyx_lyz[1];
+            float lambda_zx = lzx_lzy[0], lambda_zy = lzx_lzy[1];
+
+            float px = point[0], py = point[1], pz = point[2];
+
+            __v4sf col0 = _mm_set_ps(0.0f, lambda_xz, lambda_xy, 1.0f);
+            __v4sf col1 = _mm_set_ps(0.0f, lambda_yz, 1.0f, lambda_yx);
+            __v4sf col2 = _mm_set_ps(0.0f, 1.0f, lambda_zy, lambda_zx);
+            __v4sf col3 = _mm_set_ps(1.0f, -pz * (lambda_zx + lambda_zy), -py * (lambda_yx + lambda_yz),
+                                     -px * (lambda_xy + lambda_xz));
+
+            out[0] = _mm_add_ps(
+                _mm_add_ps(_mm_mul_ps(in[0], _mm_set1_ps(col0[0])), _mm_mul_ps(in[1], _mm_set1_ps(col1[0]))),
+                _mm_add_ps(_mm_mul_ps(in[2], _mm_set1_ps(col2[0])), _mm_mul_ps(in[3], _mm_set1_ps(col3[0]))));
+
+            out[1] = _mm_add_ps(
+                _mm_add_ps(_mm_mul_ps(in[0], _mm_set1_ps(col0[1])), _mm_mul_ps(in[1], _mm_set1_ps(col1[1]))),
+                _mm_add_ps(_mm_mul_ps(in[2], _mm_set1_ps(col2[1])), _mm_mul_ps(in[3], _mm_set1_ps(col3[1]))));
+
+            out[2] = _mm_add_ps(
+                _mm_add_ps(_mm_mul_ps(in[0], _mm_set1_ps(col0[2])), _mm_mul_ps(in[1], _mm_set1_ps(col1[2]))),
+                _mm_add_ps(_mm_mul_ps(in[2], _mm_set1_ps(col2[2])), _mm_mul_ps(in[3], _mm_set1_ps(col3[2]))));
+
+            out[3] = _mm_add_ps(
+                _mm_add_ps(_mm_mul_ps(in[0], _mm_set1_ps(col0[3])), _mm_mul_ps(in[1], _mm_set1_ps(col1[3]))),
+                _mm_add_ps(_mm_mul_ps(in[2], _mm_set1_ps(col2[3])), _mm_mul_ps(in[3], _mm_set1_ps(col3[3]))));
+        }
+
         template <length_t N, length_t M>
         void transpose(__v4si const (&in)[N], __v4si (&out)[M]);
 
@@ -426,7 +525,7 @@ namespace amal
     #endif
         }
 
-    #include <matrix_multiply_v4si.hpp>
+    #include <amal/internal/matrix_multiply_v4si.hpp>
 
         inline __v4si determinant(__v4si const (&m)[2])
         {
@@ -478,7 +577,7 @@ namespace amal
             return mm_mullo_epi32_compat(det, m[0]);
         }
 
-        template <length_t C, length_t R>
+        template <length_t C>
         inline __v4si multiply_matrix(__v4si const (&m)[C], __v4si const &v)
         {
             __v4si result = _mm_setzero_si128();
@@ -494,9 +593,9 @@ namespace amal
         }
 
     #ifdef __AVX__
-        #include <matrix_multiply_v4df.hpp>
+        #include <amal/internal/matrix_multiply_v4df.hpp>
 
-        template <size_t C, size_t R>
+        template <size_t C>
         inline __v4df multiply_matrix(__v4df const (&m)[C], __v4df const &v)
         {
             __m256d result;
@@ -776,6 +875,93 @@ namespace amal
             out[3] = _mm256_mul_pd(out[3], invd);
         }
 
+        inline void rotate(__v4df const (&m)[4], double angle, __v4df const &axis4, __v4df (&out)[4])
+        {
+            __m256d one = _mm256_set1_pd(1.0);
+            __m256d c = _mm256_set1_pd(cos(angle));
+            __m256d s = _mm256_set1_pd(sin(angle));
+
+            // normalize axis
+            __m256d dot = _mm256_add_pd(_mm256_mul_pd(axis4, axis4),
+                                        _mm256_permute4x64_pd(_mm256_mul_pd(axis4, axis4), _MM_SHUFFLE(1, 2, 0, 3)));
+            __m256d len = _mm256_sqrt_pd(dot);
+            __m256d axis = _mm256_div_pd(axis4, len);
+
+            __m256d ic = _mm256_sub_pd(one, c);
+
+            // splat
+            __m256d ax = _mm256_permute4x64_pd(axis, _MM_SHUFFLE(0, 0, 0, 0));
+            __m256d ay = _mm256_permute4x64_pd(axis, _MM_SHUFFLE(1, 1, 1, 1));
+            __m256d az = _mm256_permute4x64_pd(axis, _MM_SHUFFLE(2, 2, 2, 2));
+
+            // build rotation coefficients
+            __m256d r00 = _mm256_add_pd(c, _mm256_mul_pd(ic, _mm256_mul_pd(ax, ax)));
+            __m256d r01 = _mm256_add_pd(_mm256_mul_pd(ic, _mm256_mul_pd(ax, ay)), _mm256_mul_pd(s, az));
+            __m256d r02 = _mm256_sub_pd(_mm256_mul_pd(ic, _mm256_mul_pd(ax, az)), _mm256_mul_pd(s, ay));
+
+            __m256d r10 = _mm256_sub_pd(_mm256_mul_pd(ic, _mm256_mul_pd(ay, ax)), _mm256_mul_pd(s, az));
+            __m256d r11 = _mm256_add_pd(c, _mm256_mul_pd(ic, _mm256_mul_pd(ay, ay)));
+            __m256d r12 = _mm256_add_pd(_mm256_mul_pd(ic, _mm256_mul_pd(ay, az)), _mm256_mul_pd(s, ax));
+
+            __m256d r20 = _mm256_add_pd(_mm256_mul_pd(ic, _mm256_mul_pd(az, ax)), _mm256_mul_pd(s, ay));
+            __m256d r21 = _mm256_sub_pd(_mm256_mul_pd(ic, _mm256_mul_pd(az, ay)), _mm256_mul_pd(s, ax));
+            __m256d r22 = _mm256_add_pd(c, _mm256_mul_pd(ic, _mm256_mul_pd(az, az)));
+
+            out[0] = _mm256_add_pd(_mm256_add_pd(_mm256_mul_pd(m[0], r00), _mm256_mul_pd(m[1], r01)),
+                                   _mm256_mul_pd(m[2], r02));
+
+            out[1] = _mm256_add_pd(_mm256_add_pd(_mm256_mul_pd(m[0], r10), _mm256_mul_pd(m[1], r11)),
+                                   _mm256_mul_pd(m[2], r12));
+
+            out[2] = _mm256_add_pd(_mm256_add_pd(_mm256_mul_pd(m[0], r20), _mm256_mul_pd(m[1], r21)),
+                                   _mm256_mul_pd(m[2], r22));
+
+            out[3] = m[3]; // preserve translation
+        }
+
+        inline void scale(__v4df const (&in)[4], __v4df const &v, __v4df (&out)[4])
+        {
+            out[0] = _mm256_mul_pd(in[0], _mm256_permute4x64_pd(v, _MM_SHUFFLE(0, 0, 0, 0)));
+            out[1] = _mm256_mul_pd(in[1], _mm256_permute4x64_pd(v, _MM_SHUFFLE(1, 1, 1, 1)));
+            out[2] = _mm256_mul_pd(in[2], _mm256_permute4x64_pd(v, _MM_SHUFFLE(2, 2, 2, 2)));
+            out[3] = in[3];
+        }
+
+        inline void shear(__v4df const (&in)[4], __v4df const &point, __v4df const &lxy_lxz, __v4df const &lyx_lyz,
+                          __v4df const &lzx_lzy, __v4df (&out)[4])
+        {
+            double lambda_xy = lxy_lxz[0], lambda_xz = lxy_lxz[1];
+            double lambda_yx = lyx_lyz[0], lambda_yz = lyx_lyz[1];
+            double lambda_zx = lzx_lzy[0], lambda_zy = lzx_lzy[1];
+
+            double px = point[0], py = point[1], pz = point[2];
+
+            __v4df col0 = _mm256_set_pd(0.0, lambda_xz, lambda_xy, 1.0);
+            __v4df col1 = _mm256_set_pd(0.0, lambda_yz, 1.0, lambda_yx);
+            __v4df col2 = _mm256_set_pd(0.0, 1.0, lambda_zy, lambda_zx);
+            __v4df col3 = _mm256_set_pd(1.0, -pz * (lambda_zx + lambda_zy), -py * (lambda_yx + lambda_yz),
+                                        -px * (lambda_xy + lambda_xz));
+
+            out[0] = _mm256_add_pd(_mm256_add_pd(_mm256_mul_pd(in[0], _mm256_set1_pd(col0[0])),
+                                                 _mm256_mul_pd(in[1], _mm256_set1_pd(col1[0]))),
+                                   _mm256_add_pd(_mm256_mul_pd(in[2], _mm256_set1_pd(col2[0])),
+                                                 _mm256_mul_pd(in[3], _mm256_set1_pd(col3[0]))));
+
+            out[1] = _mm256_add_pd(_mm256_add_pd(_mm256_mul_pd(in[0], _mm256_set1_pd(col0[1])),
+                                                 _mm256_mul_pd(in[1], _mm256_set1_pd(col1[1]))),
+                                   _mm256_add_pd(_mm256_mul_pd(in[2], _mm256_set1_pd(col2[1])),
+                                                 _mm256_mul_pd(in[3], _mm256_set1_pd(col3[1]))));
+
+            out[2] = _mm256_add_pd(_mm256_add_pd(_mm256_mul_pd(in[0], _mm256_set1_pd(col0[2])),
+                                                 _mm256_mul_pd(in[1], _mm256_set1_pd(col1[2]))),
+                                   _mm256_add_pd(_mm256_mul_pd(in[2], _mm256_set1_pd(col2[2])),
+                                                 _mm256_mul_pd(in[3], _mm256_set1_pd(col3[2]))));
+
+            out[3] = _mm256_add_pd(_mm256_add_pd(_mm256_mul_pd(in[0], _mm256_set1_pd(col0[3])),
+                                                 _mm256_mul_pd(in[1], _mm256_set1_pd(col1[3]))),
+                                   _mm256_add_pd(_mm256_mul_pd(in[2], _mm256_set1_pd(col2[3])),
+                                                 _mm256_mul_pd(in[3], _mm256_set1_pd(col3[3]))));
+        }
     #endif
 #endif
     } // namespace internal

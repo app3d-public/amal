@@ -1,7 +1,7 @@
 #pragma once
 
+#include "exponential.hpp"
 #include "internal/simd/common.hpp"
-#include "internal/simd/exponential.hpp"
 #include "internal/simd/geometric.hpp"
 #include "vector.hpp"
 

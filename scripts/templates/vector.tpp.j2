@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cassert>
-#include <internal/fwd/vector.hpp>
+#include <amal/internal/fwd/vector.hpp>
 
 namespace amal
 {
@@ -18,14 +18,14 @@ namespace amal
         {
             struct
             {
-                T {% for i in range(N) %}{{ names[i] }}{{ "," if not loop.last }}{% endfor %};
+                T {% for i in range(N) %}{{ names[i] }}{{ ", " if not loop.last }}{% endfor %};
             };
 
 
             {%- if N < 4 %}
             struct
             {
-                T {% for i in range(N) %}{{ "uvw"[i] }}{{ "," if not loop.last }}{% endfor %};
+                T {% for i in range(N) %}{{ "uvw"[i] }}{{ ", " if not loop.last }}{% endfor %};
             };
             {%- endif %}
 
@@ -45,17 +45,12 @@ namespace amal
         constexpr vec(vec &&) noexcept = default;
         constexpr vec &operator=(vec &&) noexcept = default;
 
-        template <
-            typename V,
+        template <typename V,
             std::enable_if_t<std::is_same<V, typename simd_type::value_type>::value && internal::is_simd_enabled_v<V>, int> = 0>
-        constexpr explicit vec(V simd) noexcept : s(simd)
-        {
-        }
+        constexpr explicit vec(V simd) noexcept : s(simd) {}
 
         template <length_t L, AMAL_CONSTRUCT_SIMD>
-        constexpr explicit vec(const AMAL_VEC(L, T, aligned) & v) : s(v.s)
-        {
-        }
+        constexpr explicit vec(const AMAL_VEC(L, T, aligned) & v) : s(v.s) {}
 
         [[nodiscard]] static constexpr length_t length() { return {{N}}; }
 
@@ -82,106 +77,82 @@ namespace amal
             return *this;
         }
 
+        {%- set scalar_simd_elems   = (["scalar"] * N) + (["0"] * (4 - N)) -%}
+        {%- set scalar_nosimd_elems = ["scalar"] * N %}
+
         template <AMAL_CONSTRUCT_SIMD>
-        constexpr explicit vec(T scalar) noexcept
-            : data{
-                {%- for i in range(N) %}
-                scalar{{ "," if not loop.last else ""}}
-                {%- endfor %}
-                {%- for i in range(N, 4) %}
-                ,0
-                {%- endfor %}
-            }
-        {
-        }
+        constexpr vec(T scalar) noexcept: data{ {{ scalar_simd_elems | join(", ") }} } {}
+
+        template <AMAL_CONSTRUCT_NOSIMD>
+        constexpr vec(T scalar) noexcept: data{ {{ scalar_nosimd_elems | join(", ") }} } {}
 
         template <AMAL_CONSTRUCT_SIMD>
         constexpr vec(
-            {%- for i in range(N) %}
-            T {{ names[i] }}{{ ',' if not loop.last else '' }}
-            {%- endfor %}
-        ) noexcept
-            : data{
-                {%- for i in range(N) %}
-                {{ names[i] }}{{ ',' if not loop.last or N < 4 else '' }}
-                {%- endfor %}
-                {%- for _ in range(4 - N) %}
-                0{{ ',' if not loop.last and _ < (4 - N - 1) else '' }}
-                {%- endfor %}
-            }
-        {}
+            {%- for i in range(N) -%}
+                T {{ names[i] }}{{ ", " if not loop.last else "" }}
+            {%- endfor -%}
+        ) noexcept: data{
+            {%- for i in range(N) -%}
+                {{ names[i] }}{{ ", " if not loop.last or N < 4 else "" }}
+            {%- endfor -%}
+            {%- for _ in range(4 - N) -%}
+                0{{ ", " if _ < (4 - N - 1) else "" }}
+            {%- endfor -%}
+        } {}
+
 
         template <AMAL_CONSTRUCT_NOSIMD>
         constexpr vec(
-            {%- for i in range(N) %}
-            T {{ names[i] }}{{ ',' if not loop.last else '' }}
-            {%- endfor %}
-        ) noexcept
-            : data{
-                {%- for i in range(N) %}
-                {{ names[i] }}{{ ',' if not loop.last else '' }}
-                {%- endfor %}
-            }
-        {}
+        {%- for i in range(N) -%}
+            T {{ names[i] }}{{ ", " if not loop.last else "" }}
+        {%- endfor -%}
+        ) noexcept: data{
+        {%- for i in range(N) -%}
+            {{ names[i] }}{{ ", " if not loop.last else "" }}
+        {%- endfor -%}
+        } {}
 
-        template<
-            {%- for i in range(N) %}
-            typename {{ caps[i] }}{{ ',' if not loop.last else '' }}
-            {%- endfor %}, AMAL_CONSTRUCT_SIMD>
-        inline constexpr vec(
-            {%- for i in range(N) %}
-            {{ caps[i] }} {{ names[i] }}{{ ',' if not loop.last else '' }}
-            {%- endfor %}
-        )
-            : data{
-                {%- for i in range(N) %}
-                static_cast<T>({{ names[i] }}){{ ',' if not loop.last or N < 4 else '' }}
-                {%- endfor %}
-                {%- for _ in range(4 - N) %}
-                0{{ ',' if not loop.last and _ < (4 - N - 1) else '' }}
-                {%- endfor %}
-            }
-        {}
+        template<{% for i in range(N) -%}
+        typename {{ caps[i] }}{{ ", " if not loop.last else "" }}
+        {%- endfor %}, AMAL_CONSTRUCT_SIMD>
+        inline constexpr vec( {% for i in range(N) -%}{{ caps[i] }} {{ names[i] }}{{ ", " if not loop.last else "" }}{%- endfor %}): data{
+        {%- for i in range(N) %}
+            static_cast<T>({{ names[i] }}){{ "," if not loop.last or N < 4 else "" }}
+        {%- endfor %}
+        {%- for _ in range(4 - N) %}
+            0{{ "," if _ < (4 - N - 1) else "" }}
+        {%- endfor %}
+        } {}
 
-        template<
-            {%- for i in range(N) %}
-            typename {{ caps[i] }}{{ ',' if not loop.last else '' }}
-            {%- endfor %}, AMAL_CONSTRUCT_NOSIMD>
-        inline constexpr vec(
-            {%- for i in range(N) %}
-            {{ caps[i] }} {{ names[i] }}{{ ',' if not loop.last else '' }}
-            {%- endfor %}
-        )
-            : data{
-                {%- for i in range(N) %}
-                static_cast<T>({{ names[i] }}){{ ',' if not loop.last else '' }}
-                {%- endfor %}
-            }
-        {}
+        template< {% for i in range(N) -%}
+        typename {{ caps[i] }}{{ ", " if not loop.last else "" }}
+        {%- endfor %}, AMAL_CONSTRUCT_NOSIMD>
+        inline constexpr vec( {% for i in range(N) -%}{{ caps[i] }} {{ names[i] }}{{ ", " if not loop.last else "" }}{%- endfor %}): data{
+        {%- for i in range(N) %}
+            static_cast<T>({{ names[i] }}){{ "," if not loop.last else "" }}
+        {%- endfor %}
+        } {}
 
-        {%- set Ns = range(2, N) %}
-
+        {% set Ns = range(2, N) %}
         {%- for M in Ns %}
         {%- set k = N - M %}
         {%- if 0 < k < N %}
         template <AMAL_CONSTRUCT_SIMD>
-        constexpr vec(
-            const AMAL_VEC({{ M }}, T, aligned)& v{% for i in range(k) %}, T {{ names[M+i] }}{% endfor %}
-        ) : data{
+        constexpr vec(const AMAL_VEC({{ M }}, T, aligned)& v{% for i in range(k) %}, T {{ names[M+i] }}
+        {%- endfor %}) : data{
             {%- for i in range(M) %}v.{{ names[i] }}, {% endfor -%}
             {%- for i in range(k) %}{{ names[M+i] }}{{ ", " if not loop.last or N<4 else "" }}{% endfor -%}
-            {%- for _ in range(N, 4) %}0{{ ", " if not loop.last and _ < 3 else "" }}{% endfor %}
+            {%- for _ in range(N, 4) %}0{{ ", " if not loop.last and _ < 3 else "" }}{% endfor -%}
         } {}
 
         template <AMAL_CONSTRUCT_NOSIMD>
-        constexpr vec(
-            const AMAL_VEC({{ M }}, T, aligned)& v{% for i in range(k) %}, T {{ names[M+i] }}{% endfor %}
-        ) : data{
+        constexpr vec(const AMAL_VEC({{ M }}, T, aligned)& v{% for i in range(k) %}, T {{ names[M+i] }}
+        {%- endfor %}): data{
             {%- for i in range(M) %}v.{{ names[i] }}, {% endfor -%}
-            {%- for i in range(k) %}{{ names[M+i] }}{{ ", " if not loop.last else "" }}{% endfor %}
+            {%- for i in range(k) %}{{ names[M+i] }}{{ ", " if not loop.last else "" }}{% endfor -%}
         } {}
         {%- endif %}
-        {%- endfor %}
+        {% endfor %}
 
         {%- for M in Ns %}
         {%- set L = N - M %}
@@ -222,7 +193,7 @@ namespace amal
         {%- endfor %}
 
         template <typename U, bool A, AMAL_CONSTRUCT_SIMD>
-        constexpr explicit vec(const AMAL_VEC({{N}}, U, A)& v)
+        constexpr vec(const AMAL_VEC({{N}}, U, A)& v)
             : data{
                 {%- for i in range(N) %}
                 static_cast<T>(v.{{ names[i] }}),
@@ -234,7 +205,7 @@ namespace amal
         {}
 
         template <typename U, bool A, AMAL_CONSTRUCT_NOSIMD>
-        constexpr explicit vec(const AMAL_VEC({{N}}, U, A)& v)
+        constexpr vec(const AMAL_VEC({{N}}, U, A)& v)
             : data{
                 {%- for i in range(N) %}
                 static_cast<T>(v.{{ names[i] }}){{ "," if not loop.last else "" }}

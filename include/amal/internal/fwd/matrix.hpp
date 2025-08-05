@@ -118,5 +118,4 @@ namespace amal
     std::enable_if_t<internal::is_matrix_multiply_simdable<C1, R1, C2, R2, T, aligned>, AMAL_NMAT(C2, R1)>
 #define AMAL_NMAT_MUL_NOSIMD(C1, R1, C2, R2) \
     std::enable_if_t<!internal::is_matrix_multiply_simdable<C1, R1, C2, R2, T, aligned>, AMAL_NMAT(C2, R1)>
-
 } // namespace amal
