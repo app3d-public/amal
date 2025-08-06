@@ -12,10 +12,11 @@ namespace amal
 
         constexpr explicit half(internal::uint16 rhs) : data(rhs) {}
 
-        template <
-            class T,
-            std::enable_if_t<std::is_arithmetic_v<T> && !std::is_same_v<std::remove_cv_t<T>, internal::uint16>, int> = 0>
-        constexpr half(T v) noexcept : data(static_cast<internal::uint16>(internal::float_to_half(static_cast<float>(v))))
+        template <class T,
+                  std::enable_if_t<std::is_arithmetic_v<T> && !std::is_same_v<std::remove_cv_t<T>, internal::uint16>,
+                                   int> = 0>
+        constexpr half(T v) noexcept
+            : data(static_cast<internal::uint16>(internal::float_to_half(static_cast<float>(v))))
         {
         }
 
@@ -58,10 +59,16 @@ namespace amal
         return !internal::compsignal(x.data, y.data) && (x.data == y.data || !((x.data | y.data) & 0x7FFF));
     }
 
+    inline constexpr bool operator==(half x, float y) { return x == half(y); }
+    inline constexpr bool operator==(float x, half y) { return half(x) == y; }
+
     inline constexpr bool operator!=(half x, half y)
     {
         return internal::compsignal(x.data, y.data) || (x.data != y.data && ((x.data | y.data) & 0x7FFF));
     }
+
+    inline constexpr bool operator!=(half x, float y) { return x != half(y); }
+    inline constexpr bool operator!=(float x, half y) { return half(x) != y; }
 
     inline constexpr bool operator<(half x, half y)
     {
@@ -70,12 +77,18 @@ namespace amal
                    ((y.data ^ (0x8000 | (0x8000 - (y.data >> 15)))) + (y.data >> 15));
     }
 
+    inline constexpr bool operator<(half x, float y) { return x < half(y); }
+    inline constexpr bool operator<(float x, half y) { return half(x) < y; }
+
     inline constexpr bool operator>(half x, half y)
     {
         return !internal::compsignal(x.data, y.data) &&
                ((x.data ^ (0x8000 | (0x8000 - (x.data >> 15)))) + (x.data >> 15)) >
                    ((y.data ^ (0x8000 | (0x8000 - (y.data >> 15)))) + (y.data >> 15));
     }
+
+    inline constexpr bool operator>(half x, float y) { return x > half(y); }
+    inline constexpr bool operator>(float x, half y) { return half(x) > y; }
 
     inline constexpr bool operator<=(half x, half y)
     {
@@ -84,12 +97,18 @@ namespace amal
                    ((y.data ^ (0x8000 | (0x8000 - (y.data >> 15)))) + (y.data >> 15));
     }
 
+    inline constexpr bool operator<=(half x, float y) { return x <= half(y); }
+    inline constexpr bool operator<=(float x, half y) { return half(x) <= y; }
+
     inline constexpr bool operator>=(half x, half y)
     {
         return !internal::compsignal(x.data, y.data) &&
                ((x.data ^ (0x8000 | (0x8000 - (x.data >> 15)))) + (x.data >> 15)) >=
                    ((y.data ^ (0x8000 | (0x8000 - (y.data >> 15)))) + (y.data >> 15));
     }
+
+    inline constexpr bool operator>=(half x, float y) { return x >= half(y); }
+    inline constexpr bool operator>=(float x, half y) { return half(x) >= y; }
 
     inline constexpr half operator+(half arg) { return arg; }
     inline constexpr half operator-(half arg) { return half(static_cast<internal::uint16>(arg.data ^ 0x8000)); }
@@ -105,9 +124,10 @@ namespace amal
     {
         unsigned int absx = x.data & 0x7FFF, absy = y.data & 0x7FFF, sign = x.data & 0x8000;
         if (absx >= 0x7C00 || absy >= 0x7C00)
-            return half(static_cast<internal::uint16>((absx > 0x7C00 || absy > 0x7C00) ? internal::signal(x.data, y.data)
-                                                     : (absx == 0x7C00)               ? AMAL_HALF_INVALID
-                                                                                      : x.data));
+            return half(static_cast<internal::uint16>((absx > 0x7C00 || absy > 0x7C00)
+                                                          ? internal::signal(x.data, y.data)
+                                                      : (absx == 0x7C00) ? AMAL_HALF_INVALID
+                                                                         : x.data));
         if (!absy) return half(static_cast<internal::uint16>(AMAL_HALF_INVALID));
         if (!absx) return x;
         if (absx == absy) return half(static_cast<internal::uint16>(sign));
@@ -197,6 +217,8 @@ namespace amal
                    ? y
                    : x;
     }
+
+    typedef amal::half f16;
 } // namespace amal
 
 namespace std
@@ -228,7 +250,10 @@ namespace std
         static constexpr int max_exponent = 16;
         static constexpr int max_exponent10 = 4;
         static constexpr amal::half min() noexcept { return amal::half(static_cast<amal::internal::uint16>(0x0400)); }
-        static constexpr amal::half lowest() noexcept { return amal::half(static_cast<amal::internal::uint16>(0xFBFF)); }
+        static constexpr amal::half lowest() noexcept
+        {
+            return amal::half(static_cast<amal::internal::uint16>(0xFBFF));
+        }
         static constexpr amal::half max() noexcept { return amal::half(static_cast<amal::internal::uint16>(0x7BFF)); }
         static constexpr amal::half epsilon() noexcept
         {
@@ -257,4 +282,6 @@ namespace std
     };
 } // namespace std
 
-typedef amal::half f16;
+#ifndef AMAL_NO_GLOBAL_ALIASES
+using f16 = amal::half;
+#endif

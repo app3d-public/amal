@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include "internal/simd/common.hpp"
+#include "compare.hpp"
 #include "vector.hpp"
 
 namespace amal

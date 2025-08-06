@@ -6,11 +6,10 @@ from jinja2 import Template
 
 def gen_implementation(c1, r1, c2):
     lines = []
-    for j in range(r1):
-        for i in range(c2):
+    for i in range(c2):
+        for j in range(r1):
             terms = [f"m1[{k}][{j}] * m2[{i}][{k}]" for k in range(c1)]
-            expr = " + ".join(terms)
-            lines.append(expr)
+            lines.append(" + ".join(terms))
     return lines
 
 def main():

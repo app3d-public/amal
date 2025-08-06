@@ -124,7 +124,7 @@ namespace amal
     inline constexpr AMAL_TYPE_NOSIMD(AMAL_BVEC, AMAL_BVEC) not_equal(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y)
     {
         AMAL_BVEC r(true);
-        for (length_t i = 0; i < N; ++i) r[i] = x[i] == y[i];
+        for (length_t i = 0; i < N; ++i) r[i] = x[i] != y[i];
         return r;
     }
 
@@ -139,7 +139,7 @@ namespace amal
     template <length_t N, bool aligned>
     inline constexpr bool all(AMAL_BVEC const &v)
     {
-        bool r = false;
+        bool r = true;
         for (length_t i = 0; i < N; ++i) r = r && v[i];
         return r;
     }
@@ -147,7 +147,7 @@ namespace amal
     template <length_t N, bool aligned>
     inline constexpr bool invert(AMAL_BVEC const &v)
     {
-        bool r = false;
+        bool r = true;
         for (length_t i = 0; i < N; ++i) !v[i];
         return r;
     }

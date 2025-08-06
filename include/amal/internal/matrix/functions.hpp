@@ -1,7 +1,7 @@
 #pragma once
 
+#include <amal/common.hpp>
 #include <amal/internal/vec4.hpp>
-#include <cmath>
 #include "../fwd/matrix.hpp"
 #include "../simd/common.hpp"
 #include "../simd/matrix.hpp"
@@ -88,15 +88,6 @@ namespace amal
         static_assert(R == C, "Matrix must be square");
     }
 
-    template <typename T, bool aligned>
-    inline constexpr AMAL_MAT(4, 4, T, true)
-        translate(AMAL_MAT(4, 4, T, true) const &m, AMAL_VEC(3, T, aligned) const &v)
-    {
-        AMAL_NMAT(4, 4) r(m);
-        r[3] = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3];
-        return r;
-    }
-
 #if defined(AMAL_FMA_ENABLE)
     template <typename T, bool aligned>
     inline AMAL_TYPE_NOSIMD(AMAL_NMAT(2, 2), T) determinant(AMAL_NMAT(2, 2) const &m)
@@ -128,6 +119,18 @@ namespace amal
         T c3 = fma(-m[1][0], s2, fma(m[1][1], s4, -m[1][2] * s5));
 
         return fma(m[0][0], c0, fma(m[0][1], c1, fma(m[0][2], c2, m[0][3] * c3)));
+    }
+
+    template <length_t R, length_t C, typename T, bool aligned>
+    inline AMAL_NMAT_VAL_SIMD(C, R) inverse_matrix(AMAL_NMAT(R, C) const &m)
+    {
+        static_assert(is_floating_point_v<T>, "inverse_matrix only supports floating point types");
+        static_assert(R == C, "Matrix must be square");
+        using simd_t = typename AMAL_NMAT(R, C)::simd_type::value_type;
+        simd_t out[C];
+        if constexpr (R < 4) __builtin_memset(out, 0, sizeof(out));
+        internal::inverse_matrix(*reinterpret_cast<simd_t const(*)[C]>(m.data), out);
+        return AMAL_NMAT(R, C)(out);
     }
 
     template <typename T, bool aligned>
@@ -248,18 +251,6 @@ namespace amal
         return m[0][0] * coff[0] + m[0][1] * coff[1] + m[0][2] * coff[2] + m[0][3] * coff[3];
     }
 
-    template <length_t R, length_t C, typename T, bool aligned>
-    inline AMAL_NMAT_VAL_SIMD(C, R) inverse_matrix(AMAL_NMAT(R, C) const &m)
-    {
-        static_assert(is_floating_point_v<T>, "inverse_matrix only supports floating point types");
-        static_assert(R == C, "Matrix must be square");
-        using simd_t = typename AMAL_NMAT(R, C)::simd_type::value_type;
-        simd_t out[C];
-        if constexpr (R < 4) __builtin_memset(out, 0, sizeof(out));
-        internal::inverse_matrix(*reinterpret_cast<simd_t const(*)[C]>(m.data), out);
-        return AMAL_NMAT(R, C)(out);
-    }
-
     template <typename T, bool aligned>
     AMAL_NMAT_VAL_NOSIMD(2, 2)
     inverse_matrix(AMAL_NMAT(2, 2) const &m)
@@ -347,241 +338,8 @@ namespace amal
         const AMAL_NVEC(4) sign_b(-1, +1, -1, +1);
 
         const AMAL_NMAT(4, 4) inv{inv0 * sign_a, inv1 * sign_b, inv2 * sign_a, inv3 * sign_b};
-
         T dot = m[0][0] * inv[0][0] + m[0][1] * inv[1][0] + m[0][2] * inv[2][0] + m[0][3] * inv[3][0];
         return inv * (static_cast<T>(1) / dot);
-    }
-#endif
-
-    template <typename T, bool aligned>
-    inline AMAL_NMAT_VAL_SIMD(4, 4) rotate(AMAL_NMAT(4, 4) const &m, T angle, AMAL_VEC(3, T, true) const &axis)
-    {
-        static_assert(is_floating_point_v<T>, "rotate only supports floating point types");
-        using simd_t = typename AMAL_NMAT(4, 4)::simd_type::value_type;
-        simd_t out[4];
-        __builtin_memset(out, 0, sizeof(out));
-        internal::rotate(*reinterpret_cast<simd_t const(*)[4]>(m.data), angle, axis.s, out);
-        return AMAL_NMAT(4, 4)(out);
-    }
-
-    template <typename T, bool aligned>
-    inline AMAL_NMAT_VAL_SIMD(4, 4) rotate(AMAL_NMAT(4, 4) const &m, T angle, AMAL_NVEC(4) const &axis)
-    {
-        static_assert(is_floating_point_v<T>, "rotate only supports floating point types");
-        using simd_t = typename AMAL_NMAT(4, 4)::simd_type::value_type;
-        simd_t out[4];
-        internal::rotate(*reinterpret_cast<simd_t const(*)[4]>(m.data), angle, axis.s, out);
-        return AMAL_NMAT(4, 4)(out);
-    }
-
-    template <typename T, bool aligned>
-    inline AMAL_NMAT_VAL_SIMD(4, 4) scale(AMAL_NMAT(4, 4) const &m, AMAL_VEC(3, T, true) const &axis)
-    {
-        static_assert(is_floating_point_v<T>, "scale only supports floating point types");
-        using simd_t = typename AMAL_NMAT(4, 4)::simd_type::value_type;
-        simd_t out[4];
-        __builtin_memset(out, 0, sizeof(out));
-        internal::scale(*reinterpret_cast<simd_t const(*)[4]>(m.data), axis.s, out);
-        return AMAL_NMAT(4, 4)(out);
-    }
-
-    template <typename T, bool aligned>
-    inline AMAL_NMAT_VAL_SIMD(4, 4) scale(AMAL_NMAT(4, 4) const &m, AMAL_NVEC(4) const &axis)
-    {
-        static_assert(is_floating_point_v<T>, "scale only supports floating point types");
-        using simd_t = typename AMAL_NMAT(4, 4)::simd_type::value_type;
-        simd_t out[4];
-        internal::scale(*reinterpret_cast<simd_t const(*)[4]>(m.data), axis.s, out);
-        return AMAL_NMAT(4, 4)(out);
-    }
-
-    template <typename T, bool aligned>
-    inline AMAL_NMAT_VAL_NOSIMD(4, 4) scale(AMAL_NMAT(4, 4) const &m, AMAL_NVEC(3) const &axis)
-    {
-        static_assert(is_floating_point_v<T>, "scale only supports floating point types");
-        AMAL_NMAT(4, 4) out;
-        out[0] = m[0] * axis[0];
-        out[1] = m[1] * axis[1];
-        out[2] = m[2] * axis[2];
-        out[3] = m[3];
-        return out;
-    }
-
-    template <typename T, bool aligned>
-    inline AMAL_NMAT_VAL_SIMD(4, 4)
-        shear(AMAL_NMAT(4, 4) const &m, AMAL_VEC(3, T, true) const &p, AMAL_VEC(2, T, true) const &l_x,
-              AMAL_VEC(2, T, true) const &l_y, AMAL_VEC(2, T, true) const &l_z)
-    {
-        static_assert(is_floating_point_v<T>, "shear only supports floating point types");
-        using simd_t = typename AMAL_NMAT(4, 4)::simd_type::value_type;
-        simd_t out[4];
-        __builtin_memset(out, 0, sizeof(out));
-        internal::shear(*reinterpret_cast<simd_t const(*)[4]>(m.data), p.s, l_x.s, l_y.s, l_z.s, out);
-        return AMAL_NMAT(4, 4)(out);
-    }
-
-    template <typename T, bool aligned>
-    inline AMAL_NMAT_VAL_SIMD(4, 4)
-        shear(AMAL_NMAT(4, 4) const &m, AMAL_NVEC(4) const &p, AMAL_VEC(2, T, true) const &l_x,
-              AMAL_VEC(2, T, true) const &l_y, AMAL_VEC(2, T, true) const &l_z)
-    {
-        static_assert(is_floating_point_v<T>, "shear only supports floating point types");
-        using simd_t = typename AMAL_NMAT(4, 4)::simd_type::value_type;
-        simd_t out[4];
-        internal::shear(*reinterpret_cast<simd_t const(*)[4]>(m.data), p.s, l_x.s, l_y.s, l_z.s, out);
-        return AMAL_NMAT(4, 4)(out);
-    }
-
-    template <typename T, bool aligned>
-    inline AMAL_NMAT_VAL_NOSIMD(4, 4)
-        shear(AMAL_NMAT(4, 4) const &m, AMAL_NVEC(3) const &p, AMAL_VEC(2, T, true) const &l_x,
-              AMAL_VEC(2, T, true) const &l_y, AMAL_VEC(2, T, true) const &l_z)
-    {
-        static_assert(is_floating_point_v<T>, "shear only supports floating point types");
-        T const lambda_xy = l_x[0];
-        T const lambda_xz = l_x[1];
-        T const lambda_yx = l_y[0];
-        T const lambda_yz = l_y[1];
-        T const lambda_zx = l_z[0];
-        T const lambda_zy = l_z[1];
-
-        AMAL_NVEC(3) point_lambda((lambda_xy + lambda_xz), (lambda_yx + lambda_yz), (lambda_zx + lambda_zy));
-
-        AMAL_NMAT(4, 4)
-        shear(1, lambda_yx, lambda_zx, 0, lambda_xy, 1, lambda_zy, 0, lambda_xz, lambda_yz, 1, 0,
-              -point_lambda[0] * p[0], -point_lambda[1] * p[1], -point_lambda[2] * p[2], 1);
-
-        AMAL_NMAT(4, 4) r;
-        r[0] = m[0] * shear[0][0] + m[1] * shear[0][1] + m[2] * shear[0][2] + m[3] * shear[0][3];
-        r[1] = m[0] * shear[1][0] + m[1] * shear[1][1] + m[2] * shear[1][2] + m[3] * shear[1][3];
-        r[2] = m[0] * shear[2][0] + m[1] * shear[2][1] + m[2] * shear[2][2] + m[3] * shear[2][3];
-        r[3] = m[0] * shear[3][0] + m[1] * shear[3][1] + m[2] * shear[3][2] + m[3] * shear[3][3];
-        return r;
-    }
-
-    template <typename T, bool aligned>
-    inline AMAL_CONSTEXPR AMAL_NMAT(4, 4)
-        look_at_rh(AMAL_NVEC(3) const &eye, AMAL_NVEC(3) const &center, AMAL_NVEC(3) const &up)
-    {
-        AMAL_NVEC(3) const f(normalize(center - eye));
-        AMAL_NVEC(3) const s(normalize(cross(f, up)));
-        AMAL_NVEC(3) const u(cross(s, f));
-
-        AMAL_NMAT(4, 4) r;
-        r[0][0] = s.x;
-        r[1][0] = s.y;
-        r[2][0] = s.z;
-        r[0][1] = u.x;
-        r[1][1] = u.y;
-        r[2][1] = u.z;
-        r[0][2] = -f.x;
-        r[1][2] = -f.y;
-        r[2][2] = -f.z;
-        r[3][0] = -dot(s, eye);
-        r[3][1] = -dot(u, eye);
-        r[3][2] = dot(f, eye);
-        return r;
-    }
-
-    template <typename T, bool aligned>
-    inline AMAL_CONSTEXPR AMAL_NMAT(4, 4)
-        look_at_lh(AMAL_NVEC(3) const &eye, AMAL_NVEC(3) const &center, AMAL_NVEC(3) const &up)
-    {
-        AMAL_NVEC(3) const f(normalize(center - eye));
-        AMAL_NVEC(3) const s(normalize(cross(up, f)));
-        AMAL_NVEC(3) const u(cross(f, s));
-
-        AMAL_NMAT(4, 4) r;
-        r[0][0] = s.x;
-        r[1][0] = s.y;
-        r[2][0] = s.z;
-        r[0][1] = u.x;
-        r[1][1] = u.y;
-        r[2][1] = u.z;
-        r[0][2] = f.x;
-        r[1][2] = f.y;
-        r[2][2] = f.z;
-        r[3][0] = -dot(s, eye);
-        r[3][1] = -dot(u, eye);
-        r[3][2] = -dot(f, eye);
-        return r;
-    }
-
-    template <typename T, bool aligned>
-    inline AMAL_CONSTEXPR AMAL_NMAT(4, 4)
-        look_at(AMAL_NVEC(3) const &eye, AMAL_NVEC(3) const &center, AMAL_NVEC(3) const &up)
-    {
-#ifdef AMAL_RIGHT_HANDED
-        return look_at_rh<T, aligned>(eye, center, up);
-#else
-        return look_at_lh<T, aligned>(eye, center, up);
-#endif
-    }
-
-#if defined(AMAL_FMA_ENABLE)
-    template <typename T, bool aligned>
-    inline AMAL_NMAT_VAL_NOSIMD(4, 4) rotate(AMAL_NMAT(4, 4) const &m, T angle, AMAL_NVEC(3) const &v)
-    {
-        static_assert(is_floating_point_v<T>, "rotate only supports floating point types");
-        T const c = cos(angle);
-        T const s = sin(angle);
-        AMAL_NVEC(3) axis = normalize(v);
-        AMAL_NVEC(3) temp = (T(1) - c) * axis;
-
-        AMAL_NMAT(4, 4) rotate;
-
-        rotate[0][0] = fma(temp[0], axis[0], c);
-        rotate[0][1] = fma(temp[0], axis[1], s * axis[2]);
-        rotate[0][2] = fma(temp[0], axis[2], -s * axis[1]);
-
-        rotate[1][0] = fma(temp[1], axis[0], -s * axis[2]);
-        rotate[1][1] = fma(temp[1], axis[1], c);
-        rotate[1][2] = fma(temp[1], axis[2], s * axis[0]);
-
-        rotate[2][0] = fma(temp[2], axis[0], s * axis[1]);
-        rotate[2][1] = fma(temp[2], axis[1], -s * axis[0]);
-        rotate[2][2] = fma(temp[2], axis[2], c);
-
-        AMAL_NMAT(4, 4) r;
-
-        r[0] = m[0] * rotate[0][0] + m[1] * rotate[0][1] + m[2] * rotate[0][2];
-        r[1] = m[0] * rotate[1][0] + m[1] * rotate[1][1] + m[2] * rotate[1][2];
-        r[2] = m[0] * rotate[2][0] + m[1] * rotate[2][1] + m[2] * rotate[2][2];
-        r[3] = m[3];
-
-        return r;
-    }
-#else
-    template <typename T, bool aligned>
-    inline AMAL_NMAT_VAL_NOSIMD(4, 4) rotate(AMAL_NMAT(4, 4) const &m, T angle, AMAL_NVEC(3) const &v)
-    {
-        static_assert(is_floating_point_v<T>, "rotate only supports floating point types");
-        T const a = angle;
-        T const c = cos(a);
-        T const s = sin(a);
-
-        AMAL_NVEC(3) axis(normalize(v));
-        AMAL_NVEC(3) temp((T(1) - c) * axis);
-
-        AMAL_NMAT(4, 4) rotate;
-        rotate[0][0] = c + temp[0] * axis[0];
-        rotate[0][1] = temp[0] * axis[1] + s * axis[2];
-        rotate[0][2] = temp[0] * axis[2] - s * axis[1];
-
-        rotate[1][0] = temp[1] * axis[0] - s * axis[2];
-        rotate[1][1] = c + temp[1] * axis[1];
-        rotate[1][2] = temp[1] * axis[2] + s * axis[0];
-
-        rotate[2][0] = temp[2] * axis[0] + s * axis[1];
-        rotate[2][1] = temp[2] * axis[1] - s * axis[0];
-        rotate[2][2] = c + temp[2] * axis[2];
-
-        AMAL_NMAT(4, 4) r;
-        r[0] = m[0] * rotate[0][0] + m[1] * rotate[0][1] + m[2] * rotate[0][2];
-        r[1] = m[0] * rotate[1][0] + m[1] * rotate[1][1] + m[2] * rotate[1][2];
-        r[2] = m[0] * rotate[2][0] + m[1] * rotate[2][1] + m[2] * rotate[2][2];
-        r[3] = m[3];
-        return r;
     }
 #endif
 } // namespace amal

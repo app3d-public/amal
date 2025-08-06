@@ -125,6 +125,10 @@ namespace amal
     typename V = typename simd_type::value_type, std::enable_if_t<internal::is_simd_enabled_v<V>, int> = 0
 #define AMAL_CONSTRUCT_NOSIMD \
     typename V = typename simd_type::value_type, std::enable_if_t<!internal::is_simd_enabled_v<V>, int> = 0
+
+    typedef unsigned int uint;
 } // namespace amal
 
-typedef unsigned int uint;
+#ifndef AMAL_NO_GLOBAL_ALIASES
+using uint = amal::uint;
+#endif

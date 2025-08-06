@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cmath>
 #include "../fwd/matrix.hpp"
 #include "../type_info.hpp"
 #include "functions.hpp"
@@ -527,14 +526,14 @@ namespace amal
     }
 
     template <AMAL_MATRIX_TEMP_DECL>
-    inline AMAL_CONSTEXPR AMAL_MAT_SELF::column_type operator/(AMAL_MAT_SELF const &self,
+    inline AMAL_CONSTEXPR typename  AMAL_MAT_SELF::column_type operator/(AMAL_MAT_SELF const &self,
                                                                typename AMAL_MAT_SELF::row_type const &v)
     {
         return inverse_matrix(self) * v;
     }
 
     template <AMAL_MATRIX_TEMP_DECL>
-    inline AMAL_CONSTEXPR AMAL_MAT_SELF::row_type operator/(typename AMAL_MAT_SELF::column_type const &v,
+    inline AMAL_CONSTEXPR typename AMAL_MAT_SELF::row_type operator/(typename AMAL_MAT_SELF::column_type const &v,
                                                             AMAL_MAT_SELF const &self)
     {
         return v * inverse_matrix(self);

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <amal/geometric.hpp>
 #include <amal/matrix.hpp>
+#include <amal/transform.hpp>
 #include <amal/vector.hpp>
 #include <benchmark/benchmark.h>
 #include <cfloat>
@@ -270,6 +271,23 @@ static void BM_amal_mat4_translate(benchmark::State &state)
     RUN_BENCHMARK(amal::mat4, amal_mat4_out[i] = amal::translate(amal_mat4_a[i], amal3_a[i]));
 }
 
+static void BM_glm_mat3_inverse(benchmark::State &state)
+{
+    RUN_BENCHMARK(glm::mat3, glm_mat3_out[i] = glm::inverse(glm_mat3_a[i]));
+}
+static void BM_amal_mat3_inverse(benchmark::State &state)
+{
+    RUN_BENCHMARK(amal::mat3, amal_mat3_out[i] = amal::inverse_matrix(amal_mat3_a[i]));
+}
+
+static void BM_glm_mat4_inverse(benchmark::State &state)
+{
+    RUN_BENCHMARK(glm::mat4, glm_mat4_out[i] = glm::inverse(glm_mat4_a[i]));
+}
+static void BM_amal_mat4_inverse(benchmark::State &state)
+{
+    RUN_BENCHMARK(amal::mat4, amal_mat4_out[i] = amal::inverse_matrix(amal_mat4_a[i]));
+}
 
 // Register benchmarks
 BENCHMARK(BM_glm_vec3_add)->UseManualTime();
@@ -300,20 +318,24 @@ BENCHMARK(BM_glm_mat3_mat_mul_vec)->UseManualTime();
 BENCHMARK(BM_amal_mat3_mat_mul_vec)->UseManualTime();
 BENCHMARK(BM_glm_mat3_mat_mul_mat)->UseManualTime();
 BENCHMARK(BM_amal_mat3_mat_mul_mat)->UseManualTime();
-// BENCHMARK(BM_glm_mat3_mat_transpose)->UseManualTime();
-// BENCHMARK(BM_amal_mat3_mat_transpose)->UseManualTime();
+BENCHMARK(BM_glm_mat3_mat_transpose)->UseManualTime();
+BENCHMARK(BM_amal_mat3_mat_transpose)->UseManualTime();
+BENCHMARK(BM_glm_mat3_inverse)->UseManualTime();
+BENCHMARK(BM_amal_mat3_inverse)->UseManualTime();
 
-// BENCHMARK(BM_glm_mat4_mat_add)->UseManualTime();
-// BENCHMARK(BM_amal_mat4_mat_add)->UseManualTime();
-// BENCHMARK(BM_glm_mat4_mat_mul_scalar)->UseManualTime();
-// BENCHMARK(BM_amal_mat4_mat_mul_scalar)->UseManualTime();
-// BENCHMARK(BM_glm_mat4_mat_mul_vec)->UseManualTime();
-// BENCHMARK(BM_amal_mat4_mat_mul_vec)->UseManualTime();
-// BENCHMARK(BM_glm_mat4_mat_mul_mat)->UseManualTime();
-// BENCHMARK(BM_amal_mat4_mat_mul_mat)->UseManualTime();
-// BENCHMARK(BM_glm_mat4_mat_transpose)->UseManualTime();
-// BENCHMARK(BM_amal_mat4_mat_transpose)->UseManualTime();
-// BENCHMARK(BM_glm_mat4_translate)->UseManualTime();
-// BENCHMARK(BM_amal_mat4_translate)->UseManualTime();
+BENCHMARK(BM_glm_mat4_mat_add)->UseManualTime();
+BENCHMARK(BM_amal_mat4_mat_add)->UseManualTime();
+BENCHMARK(BM_glm_mat4_mat_mul_scalar)->UseManualTime();
+BENCHMARK(BM_amal_mat4_mat_mul_scalar)->UseManualTime();
+BENCHMARK(BM_glm_mat4_mat_mul_vec)->UseManualTime();
+BENCHMARK(BM_amal_mat4_mat_mul_vec)->UseManualTime();
+BENCHMARK(BM_glm_mat4_mat_mul_mat)->UseManualTime();
+BENCHMARK(BM_amal_mat4_mat_mul_mat)->UseManualTime();
+BENCHMARK(BM_glm_mat4_mat_transpose)->UseManualTime();
+BENCHMARK(BM_amal_mat4_mat_transpose)->UseManualTime();
+BENCHMARK(BM_glm_mat4_translate)->UseManualTime();
+BENCHMARK(BM_amal_mat4_translate)->UseManualTime();
+BENCHMARK(BM_glm_mat4_inverse)->UseManualTime();
+BENCHMARK(BM_amal_mat4_inverse)->UseManualTime();
 
 BENCHMARK_MAIN();

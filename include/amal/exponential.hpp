@@ -9,7 +9,8 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF pow(AMAL_VEC_SELF const &base, AMAL_VEC_SELF const &exponent)
     {
-        return internal::create_by_call(base, exponent, std::pow);
+        using PFN_pow = T (*)(T, T);
+        return internal::create_by_call(base, exponent, (PFN_pow)std::pow);
     }
 
     using ::exp;

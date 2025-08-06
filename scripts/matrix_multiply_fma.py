@@ -6,14 +6,13 @@ from jinja2 import Template
 
 def gen_implementation(c1, r1, c2):
     lines = []
-    for j in range(r1):
-        for i in range(c2):
+    for i in range(c2):
+        for j in range(r1):
             expr = f"m1[0][{j}] * m2[{i}][0]"
             for k in range(1, c1):
                 expr = f"std::fma(m1[{k}][{j}], m2[{i}][{k}], {expr})"
             lines.append(expr)
     return lines
-
 
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))

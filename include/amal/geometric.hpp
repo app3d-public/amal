@@ -61,13 +61,13 @@ namespace amal
     }
 
     template <length_t N, typename T, bool aligned>
-    inline AMAL_VEC_VAL_SIMD length(AMAL_VEC_SELF const &v)
+    inline AMAL_TYPE_SIMD(AMAL_VEC_SELF, T) length(AMAL_VEC_SELF const &v)
     {
-        return internal::sqrt(internal::dot(v.s, v.s));
+        return internal::extract_scalar(internal::sqrt(internal::dot(v.s, v.s)));
     }
 
     template <length_t N, typename T, bool aligned>
-    inline AMAL_VEC_VAL_NOSIMD length(AMAL_VEC_SELF const &v)
+    inline AMAL_TYPE_NOSIMD(AMAL_VEC_SELF, T) length(AMAL_VEC_SELF const &v)
     {
         return sqrt(dot(v, v));
     }
@@ -113,7 +113,10 @@ namespace amal
     template <typename T>
     inline T face_forward(T const &n, T const &i, T const &ref)
     {
-        return dot(ref, i) < static_cast<T>(0) ? n : -n;
+        if constexpr (is_vector_v<T>)
+            return dot(ref, i) < typename T::value_type(0) ? n : -n;
+        else
+            return dot(ref, i) < static_cast<T>(0) ? n : -n;
     }
 
     template <length_t N, typename T, bool aligned>
@@ -125,7 +128,10 @@ namespace amal
     template <typename T>
     inline T reflect(T const &i, T const &n)
     {
-        return i - n * dot(n, i) * static_cast<T>(2);
+        if constexpr (is_vector_v<T>)
+            return i - n * dot(n, i) * typename T::value_type(2);
+        else
+            return i - n * dot(n, i) * static_cast<T>(2);
     }
 
     template <length_t N, typename T, bool aligned>
@@ -145,7 +151,9 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF refract(AMAL_VEC_SELF const &i, AMAL_VEC_SELF const &n, T const &eta)
     {
-        return refract<AMAL_VEC_SELF>(i, n, eta);
+        T const dot_value = dot(n, i);
+        T const k = T(1) - eta * eta * (T(1) - dot_value * dot_value);
+        return (k >= T(0)) ? (eta * i - (eta * dot_value + sqrt(k)) * n) : AMAL_VEC_SELF(0);
     }
 
     enum class axis

@@ -179,18 +179,26 @@ namespace amal
         {%- endfor %}
 
         {%- for M in range(N+1, 5) %}
-        template <AMAL_CONSTRUCT_NOSIMD>
-        constexpr explicit vec( const AMAL_VEC({{ M }}, T, aligned)& v )
-            : data{
-                {%- for i in range(N) %}
+
+        template <AMAL_CONSTRUCT_SIMD>
+        constexpr explicit vec(const AMAL_VEC({{ M }}, T, aligned)& v)
+            : data{ {%- for i in range(N) -%}
                 v.{{ names[i] }}{{ ", " if not loop.last or N < 4 else "" }}
                 {%- endfor %}
-                {%- for _ in range(N, 4) %}
+                {%- for _ in range(N, 4) -%}
                 0{{ ", " if not loop.last and _ < 3 else "" }}
-                {%- endfor %}
-            }
-        {}
+                {%- endfor -%}
+            } {}
+
+        template <AMAL_CONSTRUCT_NOSIMD>
+        constexpr explicit vec(const AMAL_VEC({{ M }}, T, aligned)& v)
+            : data{ {%- for i in range(N) -%}
+                v.{{ names[i] }}{{ ", " if not loop.last else "" }}
+                {%- endfor -%}
+            } {}
+
         {%- endfor %}
+
 
         template <typename U, bool A, AMAL_CONSTRUCT_SIMD>
         constexpr vec(const AMAL_VEC({{N}}, U, A)& v)
@@ -201,8 +209,7 @@ namespace amal
                 {%- for i in range(N, 4) %}
                 0{{ "," if not loop.last else "" }}
                 {%- endfor %}
-            }
-        {}
+            } {}
 
         template <typename U, bool A, AMAL_CONSTRUCT_NOSIMD>
         constexpr vec(const AMAL_VEC({{N}}, U, A)& v)
@@ -210,8 +217,7 @@ namespace amal
                 {%- for i in range(N) %}
                 static_cast<T>(v.{{ names[i] }}){{ "," if not loop.last else "" }}
                 {%- endfor %}
-            }
-        {}
+            } {}
     };
 
     namespace internal
@@ -226,11 +232,11 @@ namespace amal
             );
         }
 
-        template <typename T, bool aligned>
+        template <typename T, bool aligned, typename F>
         inline constexpr AMAL_NVEC({{N}}) create_by_call(
             AMAL_NVEC({{N}}) const &v1,
             AMAL_NVEC({{N}}) const &v2,
-            T (*call)(T, T)) noexcept
+            F call) noexcept
         {
             return AMAL_NVEC({{N}})(
                 {%- for i in range(N) -%}

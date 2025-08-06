@@ -1,0 +1,17 @@
+cmake_minimum_required(VERSION 3.17)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+
+set(TEST_LIBRARIES amal)
+add_test_files(amal common common.cpp)
+add_test_files(amal compare compare.cpp)
+add_test_files(amal euler_angles euler_angles.cpp)
+add_test_files(amal exponential exponential.cpp)
+add_test_files(amal geometric geometric.cpp)
+add_test_files(amal matrix matrix.cpp)
+add_test_files(amal trigonometric trigonometric.cpp)
+add_test_files(amal transform transform.cpp)
+add_test_files(amal half half.cpp)
+
+if(ENABLE_COVERAGE)
+    add_test_coverage(amal)
+endif()

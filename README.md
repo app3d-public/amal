@@ -25,7 +25,7 @@ The amal is not a fully constexpr-ready library by default settings in accordanc
 <details>
 <summary>amal/glm comparison</summary>
 
-OS: Microsoft Windows 11 10.0.26100\
+OS: Microsoft Windows 10.0.26100\
 CPU: Intel(R) Core(TM) Ultra 9 185H\
 Types size: packed (default)\
 glm flags:
@@ -36,46 +36,50 @@ amal flags: none (default)
 
 | Benchmark                               |   Time (ns) |   Bandwidth (GiB/s) |   cps_avg (M) |   cps_max (M) |   cps_min (M) |
 |:----------------------------------------|------------:|--------------------:|--------------:|--------------:|--------------:|
-| BM_glm_vec3_add             |       14804 |               0.755 |        70.808 |        80     |         1.134 |
-| BM_amal_vec3_add            |        8974 |               1.245 |       117.791 |       133.333 |         1.655 |
-| BM_glm_vec3_mul_scalar      |       15257 |               0.733 |        68.209 |        78.125 |         0.657 |
-| BM_amal_vec3_mul_scalar     |        8143 |               1.373 |       128.309 |       144.928 |         2.706 |
-| BM_glm_vec3_dot             |       17533 |               0.637 |        59.315 |        67.568 |         1.351 |
-| BM_amal_vec3_dot            |        4087 |               2.735 |       252.177 |       303.030 |         3.394 |
-| BM_glm_vec3_normalize       |       40701 |               0.275 |        25.355 |        27.855 |         0.875 |
-| BM_amal_vec3_normalize      |       12529 |               0.892 |        83.066 |        97.087 |         2.355 |
-| BM_glm_vec3_cross           |        9081 |               1.231 |       114.932 |       129.870 |         2.203 |
-| BM_amal_vec3_cross          |        7874 |               1.419 |       132.273 |       149.254 |         0.687 |
-| BM_glm_vec4_add             |       15606 |               0.955 |        65.826 |        75.188 |         4.728 |
-| BM_amal_vec4_add            |        9321 |               1.599 |       110.555 |       120.482 |         2.355 |
-| BM_glm_vec4_mul_scalar      |       15785 |               0.944 |        65.976 |        75.188 |         1.094 |
-| BM_amal_vec4_mul_scalar     |        8684 |               1.716 |       119.388 |       131.579 |         1.732 |
-| BM_glm_vec4_dot             |       18201 |               0.838 |        56.684 |        63.291 |         2.690 |
-| BM_amal_vec4_dot            |        5138 |               2.900 |       202.256 |       256.410 |         2.470 |
-| BM_glm_vec4_normalize       |       45298 |               0.337 |        22.825 |        25.445 |         1.071 |
-| BM_amal_vec4_normalize      |        7193 |               2.072 |       146.167 |       178.571 |         1.241 |
-| BM_glm_mat3_mat_add         |       62716 |               0.535 |        16.374 |        18.519 |         2.473 |
-| BM_amal_mat3_mat_add        |       28724 |               1.167 |        35.945 |        39.682 |         2.311 |
-| BM_glm_mat3_mat_mul_scalar  |       55663 |               0.603 |        18.346 |        20.534 |         2.345 |
-| BM_amal_mat3_mat_mul_scalar |       27275 |               1.229 |        37.783 |        41.494 |         1.199 |
-| BM_glm_mat3_mat_mul_vec     |      134977 |               0.248 |         7.638 |         8.795 |         1.253 |
-| BM_amal_mat3_mat_mul_vec    |       30802 |               1.088 |        33.581 |        42.918 |         1.677 |
-| BM_glm_mat3_mat_mul_mat     |      209121 |               0.164 |         4.937 |         5.587 |         1.033 |
-| BM_amal_mat3_mat_mul_mat    |      168716 |               0.203 |         6.130 |         7.994 |         1.007 |
-| BM_glm_mat3_mat_transpose   |      116172 |               0.289 |         8.764 |        10.428 |         1.074 |
-| BM_amal_mat3_mat_transpose  |       30984 |               1.082 |        33.350 |        42.194 |         1.850 |
-| BM_glm_mat4_mat_add         |       79906 |               0.746 |        12.915 |        14.749 |         1.551 |
-| BM_amal_mat4_mat_add        |       37269 |               1.599 |        27.800 |        30.212 |         2.444 |
-| BM_glm_mat4_mat_mul_scalar  |       78847 |               0.756 |        13.057 |        14.706 |         0.822 |
-| BM_amal_mat4_mat_mul_scalar |       35909 |               1.660 |        28.741 |        30.864 |         0.784 |
-| BM_glm_mat4_mat_mul_vec     |      116827 |               0.522 |         8.840 |        10.081 |         1.771 |
-| BM_amal_mat4_mat_mul_vec    |       10268 |               5.805 |        99.521 |       112.360 |         1.339 |
-| BM_glm_mat4_mat_mul_mat     |      424352 |               0.144 |         2.435 |         2.755 |         0.822 |
-| BM_amal_mat4_mat_mul_mat    |       28936 |               2.060 |        35.493 |        40.161 |         2.141 |
-| BM_glm_mat4_mat_transpose   |      203053 |               0.295 |         5.077 |         6.177 |         1.430 |
-| BM_amal_mat4_mat_transpose  |       17040 |               3.498 |        60.892 |        69.930 |         1.549 |
-| BM_glm_mat4_translate       |      114098 |               0.522 |         8.975 |        10.132 |         1.217 |
-| BM_amal_mat4_translate      |       67315 |               0.887 |        15.341 |        16.892 |         2.488 |
+| BM_glm_vec3_add            |      14379 |             0.7772 |       70.7756 |       80.0000 |        0.9924 |
+| BM_amal_vec3_add           |       8754 |             1.2767 |      119.3210 |      133.3330 |        0.5678 |
+| BM_glm_vec3_mul_scalar     |      15199 |             0.7353 |       68.1126 |       78.1250 |        1.6176 |
+| BM_amal_vec3_mul_scalar    |       8133 |             1.3741 |      129.2630 |      144.9280 |        1.9286 |
+| BM_glm_vec3_dot            |      17368 |             0.6435 |       60.0295 |       67.5676 |        0.8031 |
+| BM_amal_vec3_dot           |       4236 |             2.6381 |      248.4100 |      303.0300 |        5.6818 |
+| BM_glm_vec3_normalize      |      41741 |             0.2677 |       24.9370 |       27.8552 |        0.9571 |
+| BM_amal_vec3_normalize     |      12069 |             0.9260 |       85.5178 |       98.0392 |        2.1758 |
+| BM_glm_vec3_cross          |       8959 |             1.2474 |      115.9240 |      129.8700 |        2.6911 |
+| BM_amal_vec3_cross         |       7728 |             1.4461 |      132.4150 |      149.2540 |        1.1120 |
+| BM_glm_vec4_add            |      16081 |             0.9266 |       65.0168 |       75.1880 |        1.4861 |
+| BM_amal_vec4_add           |       9549 |             1.5605 |      109.6090 |      120.4820 |        1.6633 |
+| BM_glm_vec4_mul_scalar     |      15999 |             0.9314 |       65.2765 |       74.6269 |        2.0338 |
+| BM_amal_vec4_mul_scalar    |       8524 |             1.7482 |      120.2810 |      131.5790 |        3.6603 |
+| BM_glm_vec4_dot            |      18075 |             0.8244 |       56.7989 |       63.2911 |        1.7259 |
+| BM_amal_vec4_dot           |       5144 |             2.8968 |      202.7530 |      256.4100 |        1.6319 |
+| BM_glm_vec4_normalize      |      45676 |             0.3262 |       22.7955 |       25.5102 |        3.0609 |
+| BM_amal_vec4_normalize     |       6861 |             2.1718 |      151.1290 |      178.5710 |        2.9904 |
+| BM_glm_mat3_mat_add        |      62754 |             0.5343 |       16.5438 |       18.5529 |        1.9759 |
+| BM_amal_mat3_mat_add       |      29376 |             1.1413 |       35.6115 |       39.6825 |        1.9693 |
+| BM_glm_mat3_mat_mul_scalar |      56283 |             0.5957 |       18.4367 |       20.5761 |        1.3275 |
+| BM_amal_mat3_mat_mul_scalar|      27358 |             1.2255 |       37.6666 |       41.4938 |        2.8209 |
+| BM_glm_mat3_mat_mul_vec    |     134919 |             0.2485 |        7.7070 |        8.7951 |        0.9537 |
+| BM_amal_mat3_mat_mul_vec   |      35424 |             0.9465 |       29.2337 |       36.3636 |        1.2819 |
+| BM_glm_mat3_mat_mul_mat    |     205935 |             0.1628 |        5.0027 |        5.5866 |        1.8077 |
+| BM_amal_mat3_mat_mul_mat   |     187013 |             0.1793 |        5.4869 |        7.0175 |        1.4443 |
+| BM_glm_mat3_mat_transpose  |     121522 |             0.2759 |        8.4939 |       10.1317 |        1.4843 |
+| BM_amal_mat3_mat_transpose |      35072 |             0.9560 |       29.7086 |       36.9004 |        2.3691 |
+| BM_glm_mat3_inverse        |     388949 |             0.0862 |        2.6307 |        3.1250 |        0.7598 |
+| BM_amal_mat3_inverse       |     128956 |             0.2600 |        7.8872 |        9.9404 |        2.1268 |
+| BM_glm_mat4_mat_add        |      78899 |             0.7555 |       12.9791 |       14.5349 |        1.0396 |
+| BM_amal_mat4_mat_add       |      38167 |             1.5617 |       27.1162 |       29.5858 |        3.6140 |
+| BM_glm_mat4_mat_mul_scalar |      83260 |             0.7159 |       12.5723 |       14.7493 |        1.9944 |
+| BM_amal_mat4_mat_mul_scalar|      36613 |             1.6280 |       28.2258 |       30.4878 |        3.1017 |
+| BM_glm_mat4_mat_mul_vec    |     117386 |             0.5078 |        8.8260 |        9.9404 |        0.7092 |
+| BM_amal_mat4_mat_mul_vec   |      10452 |             5.7027 |       99.4458 |      112.3600 |        3.4674 |
+| BM_glm_mat4_mat_mul_mat    |     401056 |             0.1486 |        2.5858 |        2.8977 |        0.8968 |
+| BM_amal_mat4_mat_mul_mat   |      29076 |             2.0499 |       35.8042 |       40.3226 |        1.2721 |
+| BM_glm_mat4_mat_transpose  |     205584 |             0.2899 |        5.0495 |        5.9067 |        0.9642 |
+| BM_amal_mat4_mat_transpose |      17102 |             3.4853 |       60.6989 |       68.0272 |        2.3026 |
+| BM_glm_mat4_translate      |     114782 |             0.5193 |        9.0026 |       10.1112 |        2.2502 |
+| BM_amal_mat4_translate     |      58879 |             1.0123 |       17.7301 |       19.6850 |        0.6772 |
+| BM_glm_mat4_inverse        |     933741 |             0.0638 |        1.0825 |        1.2145 |        0.4827 |
+| BM_amal_mat4_inverse       |      49699 |             1.1993 |       20.6486 |       22.6757 |        1.9205 |
 
 </details>
 
@@ -95,7 +99,9 @@ Amal is provided as CMake interface library.
 - `AMAL_FORCE_ALIGNED_TYPES`: Type aliases are forced to be aligned
 - `AMAL_FMA_DISABLE`: Disable FMA instructions
 - `AMAL_SIMD_DISABLE`: Disable SIMD instructions
-- `AMAL_RIGHT_HANDED`: Use right-handed coordinate system. Default is left-handed
+- `AMAL_CLIP_SPACE_LH`: Use left-handed coordinate system. Default is right-handed
+- `AMAL_CLIP_SPACE_NO`: Use Negative One to One clip space. Default is Zero to One
+- `AMAL_NO_GLOBAL_ALIASES`: Disable global type aliases
 
 #### Options:
 - `BUILD_TESTS`: Enable testing

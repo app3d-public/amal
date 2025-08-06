@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include "../type_info.hpp"
 #include "geometric.hpp"
 
@@ -236,68 +237,111 @@ namespace amal
 
         inline void inverse_matrix(__v4sf const (&m)[4], __v4sf (&out)[4])
         {
-            const __v4sf A = m[0]; // [a0 a1 a2 a3]
-            const __v4sf B = m[1]; // [b0 b1 b2 b3]
-            const __v4sf C = m[2]; // [c0 c1 c2 c3]
-            const __v4sf D = m[3]; // [d0 d1 d2 d3]
+            __m128 v3 = m[3], v2 = m[2], v1 = m[1];
 
-            const __v4sf AB_lo = _mm_movelh_ps(A, B); // [a0 a1 b0 b1]
-            const __v4sf AB_hi = _mm_movehl_ps(B, A); // [a2 a3 b2 b3]
-            const __v4sf CD_lo = _mm_movelh_ps(C, D); // [c0 c1 d0 d1]
-            const __v4sf CD_hi = _mm_movehl_ps(D, C); // [c2 c3 d2 d3]
+            __m128 A3_3 = _mm_shuffle_ps(v3, v2, _MM_SHUFFLE(3, 3, 3, 3));
+            __m128 A2_2 = _mm_shuffle_ps(v3, v2, _MM_SHUFFLE(2, 2, 2, 2));
+            __m128 A1_1 = _mm_shuffle_ps(v3, v2, _MM_SHUFFLE(1, 1, 1, 1));
+            __m128 A0_0 = _mm_shuffle_ps(v3, v2, _MM_SHUFFLE(0, 0, 0, 0));
 
-            const __v4sf AB_lo_swapped = _mm_shuffle_ps(AB_lo, AB_lo, _MM_SHUFFLE(2, 3, 0, 1)); // [b0 b1 a0 a1]
-            const __v4sf CD_hi_swapped = _mm_shuffle_ps(CD_hi, CD_hi, _MM_SHUFFLE(2, 3, 0, 1)); // [d2 d3 c2 c3]
+            __m128 B3_3 = _mm_shuffle_ps(v2, v1, _MM_SHUFFLE(3, 3, 3, 3));
+            __m128 B2_2 = _mm_shuffle_ps(v2, v1, _MM_SHUFFLE(2, 2, 2, 2));
+            __m128 B1_1 = _mm_shuffle_ps(v2, v1, _MM_SHUFFLE(1, 1, 1, 1));
+            __m128 B0_0 = _mm_shuffle_ps(v2, v1, _MM_SHUFFLE(0, 0, 0, 0));
 
-            const __v4sf ab_cd = _mm_mul_ps(AB_lo, CD_hi);
-            const __v4sf ab_cd_swapped = _mm_mul_ps(AB_lo_swapped, CD_hi_swapped);
-            const __v4sf cof0 = _mm_sub_ps(ab_cd, ab_cd_swapped);
+            __m128 Fac0, Fac1, Fac2, Fac3, Fac4, Fac5;
+            {
+                __m128 a = _mm_shuffle_ps(A3_3, A3_3, _MM_SHUFFLE(2, 0, 0, 0));
+                __m128 b = _mm_shuffle_ps(A2_2, A2_2, _MM_SHUFFLE(2, 0, 0, 0));
+    #ifdef AMAL_FMA_ENABLE
+                Fac0 = _mm_fmsub_ps(B2_2, a, _mm_mul_ps(b, B3_3));
+    #else
+                Fac0 = _mm_sub_ps(_mm_mul_ps(B2_2, a), _mm_mul_ps(b, B3_3));
+    #endif
+            }
+            {
+                __m128 a = _mm_shuffle_ps(A3_3, A3_3, _MM_SHUFFLE(2, 0, 0, 0));
+                __m128 b = _mm_shuffle_ps(A1_1, A1_1, _MM_SHUFFLE(2, 0, 0, 0));
+    #ifdef AMAL_FMA_ENABLE
+                Fac1 = _mm_fmsub_ps(B1_1, a, _mm_mul_ps(b, B3_3));
+    #else
+                Fac1 = _mm_sub_ps(_mm_mul_ps(B1_1, a), _mm_mul_ps(b, B3_3));
+    #endif
+            }
+            // Fac2 = B1_1*swp(A2_2) - B2_2*swp(A1_1)
+            {
+                __m128 a = _mm_shuffle_ps(A2_2, A2_2, _MM_SHUFFLE(2, 0, 0, 0));
+                __m128 b = _mm_shuffle_ps(A1_1, A1_1, _MM_SHUFFLE(2, 0, 0, 0));
+    #ifdef AMAL_FMA_ENABLE
+                Fac2 = _mm_fmsub_ps(B1_1, a, _mm_mul_ps(b, B2_2));
+    #else
+                Fac2 = _mm_sub_ps(_mm_mul_ps(B1_1, a), _mm_mul_ps(b, B2_2));
+    #endif
+            }
+            // Fac3 = B0_0*swp(A3_3) - B3_3*swp(A0_0)
+            {
+                __m128 a = _mm_shuffle_ps(A3_3, A3_3, _MM_SHUFFLE(2, 0, 0, 0));
+                __m128 b = _mm_shuffle_ps(A0_0, A0_0, _MM_SHUFFLE(2, 0, 0, 0));
+    #ifdef AMAL_FMA_ENABLE
+                Fac3 = _mm_fmsub_ps(B0_0, a, _mm_mul_ps(b, B3_3));
+    #else
+                Fac3 = _mm_sub_ps(_mm_mul_ps(B0_0, a), _mm_mul_ps(b, B3_3));
+    #endif
+            }
+            // Fac4 = B0_0*swp(A2_2) - B2_2*swp(A0_0)
+            {
+                __m128 a = _mm_shuffle_ps(A2_2, A2_2, _MM_SHUFFLE(2, 0, 0, 0));
+                __m128 b = _mm_shuffle_ps(A0_0, A0_0, _MM_SHUFFLE(2, 0, 0, 0));
+    #ifdef AMAL_FMA_ENABLE
+                Fac4 = _mm_fmsub_ps(B0_0, a, _mm_mul_ps(b, B2_2));
+    #else
+                Fac4 = _mm_sub_ps(_mm_mul_ps(B0_0, a), _mm_mul_ps(b, B2_2));
+    #endif
+            }
+            // Fac5 = B0_0*swp(A1_1) - B1_1*swp(A0_0)
+            {
+                __m128 a = _mm_shuffle_ps(A1_1, A1_1, _MM_SHUFFLE(2, 0, 0, 0));
+                __m128 b = _mm_shuffle_ps(A0_0, A0_0, _MM_SHUFFLE(2, 0, 0, 0));
+    #ifdef AMAL_FMA_ENABLE
+                Fac5 = _mm_fmsub_ps(B0_0, a, _mm_mul_ps(b, B1_1));
+    #else
+                Fac5 = _mm_sub_ps(_mm_mul_ps(B0_0, a), _mm_mul_ps(b, B1_1));
+    #endif
+            }
 
-            const __v4sf AB_hi_swapped = _mm_shuffle_ps(AB_hi, AB_hi, _MM_SHUFFLE(2, 3, 0, 1));
-            const __v4sf CD_lo_swapped = _mm_shuffle_ps(CD_lo, CD_lo, _MM_SHUFFLE(2, 3, 0, 1));
+            const __m128 sign_a = _mm_set_ps(1.f, -1.f, 1.f, -1.f);
+            const __m128 sign_b = _mm_set_ps(-1.f, 1.f, -1.f, 1.f);
 
-            const __v4sf ab2_cd2 = _mm_mul_ps(AB_hi, CD_lo);
-            const __v4sf ab2_cd2_swapped = _mm_mul_ps(AB_hi_swapped, CD_lo_swapped);
-            const __v4sf cof1 = _mm_sub_ps(ab2_cd2, ab2_cd2_swapped);
+            __m128 T0 = _mm_shuffle_ps(m[1], m[0], _MM_SHUFFLE(0, 0, 0, 0));
+            __m128 T1 = _mm_shuffle_ps(m[1], m[0], _MM_SHUFFLE(1, 1, 1, 1));
+            __m128 T2 = _mm_shuffle_ps(m[1], m[0], _MM_SHUFFLE(2, 2, 2, 2));
+            __m128 T3 = _mm_shuffle_ps(m[1], m[0], _MM_SHUFFLE(3, 3, 3, 3));
 
-            out[0] = _mm_shuffle_ps(cof0, cof1, _MM_SHUFFLE(2, 0, 2, 0)); // [+, -, +, -]
-            out[1] = _mm_shuffle_ps(cof0, cof1, _MM_SHUFFLE(3, 1, 3, 1)); // [-, +, -, +]
+            __m128 V0 = _mm_shuffle_ps(T0, T0, _MM_SHUFFLE(2, 2, 2, 0));
+            __m128 V1 = _mm_shuffle_ps(T1, T1, _MM_SHUFFLE(2, 2, 2, 0));
+            __m128 V2 = _mm_shuffle_ps(T2, T2, _MM_SHUFFLE(2, 2, 2, 0));
+            __m128 V3 = _mm_shuffle_ps(T3, T3, _MM_SHUFFLE(2, 2, 2, 0));
 
-            const __v4sf sign0 = _mm_setr_ps(+1.f, -1.f, +1.f, -1.f);
-            const __v4sf sign1 = _mm_setr_ps(-1.f, +1.f, -1.f, +1.f);
+            __m128 inv0 = _mm_mul_ps(
+                sign_b, _mm_add_ps(_mm_sub_ps(_mm_mul_ps(V1, Fac0), _mm_mul_ps(V2, Fac1)), _mm_mul_ps(V3, Fac2)));
+            __m128 inv1 = _mm_mul_ps(
+                sign_a, _mm_add_ps(_mm_sub_ps(_mm_mul_ps(V0, Fac0), _mm_mul_ps(V2, Fac3)), _mm_mul_ps(V3, Fac4)));
+            __m128 inv2 = _mm_mul_ps(
+                sign_b, _mm_add_ps(_mm_sub_ps(_mm_mul_ps(V0, Fac1), _mm_mul_ps(V1, Fac3)), _mm_mul_ps(V3, Fac5)));
+            __m128 inv3 = _mm_mul_ps(
+                sign_a, _mm_add_ps(_mm_sub_ps(_mm_mul_ps(V0, Fac2), _mm_mul_ps(V1, Fac4)), _mm_mul_ps(V2, Fac5)));
 
-            out[0] = _mm_mul_ps(out[0], sign0);
-            out[1] = _mm_mul_ps(out[1], sign1);
+            __m128 row0 = _mm_shuffle_ps(inv0, inv1, _MM_SHUFFLE(0, 0, 0, 0));
+            __m128 row1 = _mm_shuffle_ps(inv2, inv3, _MM_SHUFFLE(0, 0, 0, 0));
+            __m128 row2 = _mm_shuffle_ps(row0, row1, _MM_SHUFFLE(2, 0, 2, 0));
 
-            const __v4sf CD_lo_swapped2 = _mm_shuffle_ps(CD_lo, CD_lo, _MM_SHUFFLE(2, 3, 0, 1));
-            const __v4sf AB_hi_swapped2 = _mm_shuffle_ps(AB_hi, AB_hi, _MM_SHUFFLE(2, 3, 0, 1));
+            __m128 det = dot(m[0], row2);
+            __m128 rdet = _mm_div_ps(_mm_set1_ps(1.f), det);
 
-            const __v4sf cd_ab = _mm_mul_ps(CD_lo, AB_hi);
-            const __v4sf cd_ab_swapped = _mm_mul_ps(CD_lo_swapped2, AB_hi_swapped2);
-            const __v4sf cof2 = _mm_sub_ps(cd_ab, cd_ab_swapped);
-
-            const __v4sf CD_hi_swapped2 = _mm_shuffle_ps(CD_hi, CD_hi, _MM_SHUFFLE(2, 3, 0, 1));
-            const __v4sf AB_lo_swapped2 = _mm_shuffle_ps(AB_lo, AB_lo, _MM_SHUFFLE(2, 3, 0, 1));
-
-            const __v4sf cd_ab2 = _mm_mul_ps(CD_hi, AB_lo);
-            const __v4sf cd_ab2_swapped = _mm_mul_ps(CD_hi_swapped2, AB_lo_swapped2);
-            const __v4sf cof3 = _mm_sub_ps(cd_ab2, cd_ab2_swapped);
-
-            out[2] = _mm_shuffle_ps(cof2, cof3, _MM_SHUFFLE(2, 0, 2, 0)); // [+, -, +, -]
-            out[3] = _mm_shuffle_ps(cof2, cof3, _MM_SHUFFLE(3, 1, 3, 1)); // [-, +, -, +]
-
-            const __v4sf sign2 = sign0;
-            const __v4sf sign3 = sign1;
-            out[2] = _mm_mul_ps(out[2], sign2);
-            out[3] = _mm_mul_ps(out[3], sign3);
-
-            __v4sf detvec = dot(m[0], out[0]);
-            __v4sf rdet = _mm_rcp_ps(detvec);
-
-            out[0] = _mm_mul_ps(out[0], rdet);
-            out[1] = _mm_mul_ps(out[1], rdet);
-            out[2] = _mm_mul_ps(out[2], rdet);
-            out[3] = _mm_mul_ps(out[3], rdet);
+            out[0] = _mm_mul_ps(inv0, rdet);
+            out[1] = _mm_mul_ps(inv1, rdet);
+            out[2] = _mm_mul_ps(inv2, rdet);
+            out[3] = _mm_mul_ps(inv3, rdet);
         }
 
     #if defined(AMAL_FMA_ENABLE)
@@ -794,14 +838,27 @@ namespace amal
 
         inline void inverse_matrix(__v4df const (&m)[2], __v4df (&out)[2])
         {
-            __v4df a = m[0], b = m[1];
-            __v4df det = _mm256_sub_pd(_mm256_mul_pd(a, _mm256_permute4x64_pd(b, _MM_SHUFFLE(0, 0, 3, 3))),
-                                       _mm256_mul_pd(_mm256_permute4x64_pd(a, _MM_SHUFFLE(0, 0, 3, 3)), b));
-            __v4df invd = _mm256_div_pd(_mm256_set1_pd(1.0), det);
-            __v4df adj0 =
-                _mm256_setr_pd(+((double *)&b)[3], -((double *)&b)[2], -((double *)&a)[3], +((double *)&a)[2]);
-            __v4df adj1 =
-                _mm256_setr_pd(-((double *)&b)[1], +((double *)&b)[0], +((double *)&a)[1], -((double *)&a)[0]);
+            // m[0] = {a00, a10, x, x}
+            // m[1] = {a01, a11, x, x}
+            __m256d a = m[0];
+            __m256d b = m[1];
+
+            // ---------------- det = a00*a11 − a10*a01 ----------------
+            __m128d a_low = _mm256_castpd256_pd128(a); // [a00 a10]
+            __m128d b_low = _mm256_castpd256_pd128(b); // [a01 a11]
+
+            double a00 = _mm_cvtsd_f64(a_low);                         // lane-0
+            double a10 = _mm_cvtsd_f64(_mm_unpackhi_pd(a_low, a_low)); // lane-1
+            double a01 = _mm_cvtsd_f64(b_low);
+            double a11 = _mm_cvtsd_f64(_mm_unpackhi_pd(b_low, b_low));
+
+            double det = a00 * a11 - a10 * a01;
+            __m256d invd = _mm256_set1_pd(1.0 / det);
+
+            // ---------------- adjugate ----------------
+            __m256d adj0 = _mm256_setr_pd(+a11, -a01, 0.0, 0.0); // [ d, −b, 0,0 ]
+            __m256d adj1 = _mm256_setr_pd(-a10, +a00, 0.0, 0.0); // [−c,  a, 0,0 ]
+
             out[0] = _mm256_mul_pd(adj0, invd);
             out[1] = _mm256_mul_pd(adj1, invd);
         }

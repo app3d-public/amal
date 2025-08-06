@@ -90,10 +90,10 @@ namespace amal
     template <length_t N, typename T, bool aligned, typename U>
     inline constexpr AMAL_VEC_REF_NOSIMD operator/=(AMAL_VEC_SELF &lhs, U scalar)
     {
-        lhs.x += static_cast<T>(scalar);
-        lhs.y += static_cast<T>(scalar);
-        if constexpr (N > 2) lhs.z += static_cast<T>(scalar);
-        if constexpr (N > 3) lhs.w += static_cast<T>(scalar);
+        lhs.x /= static_cast<T>(scalar);
+        lhs.y /= static_cast<T>(scalar);
+        if constexpr (N > 2) lhs.z /= static_cast<T>(scalar);
+        if constexpr (N > 3) lhs.w /= static_cast<T>(scalar);
         return lhs;
     }
 
