@@ -17,7 +17,7 @@ The amal is not a fully constexpr-ready library by default settings in accordanc
 - Half-precision arithmetic is not IEEE 754-compliant
 
 ## Dependencies:
-- [acbt](https://github.com/app3d/acbt) (Testing Only)
+- [acbt](https://git.homedatasrv.ru/app3d/acbt) (Testing Only)
 - [jinja2 Python Package](https://pypi.org/project/Jinja2/)
 
 ## Benchmark

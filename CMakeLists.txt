@@ -19,9 +19,13 @@ add_dependencies(${PROJECT_NAME} amal_generated_headers)
 
 if(BUILD_TESTS)
     enable_testing()
+
+    if(NOT DEFINED ACBT_LOADED)
+        include(cmake/utils.cmake)
+    endif()
+
     add_subdirectory(tests)
 endif()
-
 
 set_target_properties(${PROJECT_NAME}
     PROPERTIES
