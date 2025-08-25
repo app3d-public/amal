@@ -106,7 +106,7 @@ Amal is provided as CMake interface library.
 - `AMAL_NO_GLOBAL_ALIASES`: Disable global type aliases
 
 #### Options:
-- `AMAL_INTEGRATE_ACUL': Specialize acul functions
+- `AMAL_INTEGRATE_ACUL`: Specialize acul functions
 - `BUILD_TESTS`: Enable testing
 - `ENABLE_COVERAGE`: Enable code coverage
 
