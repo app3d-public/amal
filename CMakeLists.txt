@@ -22,6 +22,12 @@ target_include_directories(${PROJECT_NAME}
 
 add_dependencies(${PROJECT_NAME} amal_generated_headers)
 
+option(AMAL_INTEGRATE_ACUL "Integrate acul" ON)
+if(AMAL_INTEGRATE_ACUL)
+    target_compile_definitions(${PROJECT_NAME} INTERFACE -DAMAL_INTEGRATE_ACUL)
+    target_link_libraries(${PROJECT_NAME} INTERFACE acul)
+endif()
+
 if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)

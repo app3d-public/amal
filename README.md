@@ -19,6 +19,7 @@ The amal is not a fully constexpr-ready library by default settings in accordanc
 
 ## Dependencies:
 - [acbt](https://git.homedatasrv.ru/app3d/acbt)
+- [acul](https://git.homedatasrv.ru/app3d/acul) - Optional. Used for acul integration only
 - [jinja2 Python Package](https://pypi.org/project/Jinja2/)
 
 ## Benchmark
@@ -105,6 +106,7 @@ Amal is provided as CMake interface library.
 - `AMAL_NO_GLOBAL_ALIASES`: Disable global type aliases
 
 #### Options:
+- `AMAL_INTEGRATE_ACUL': Specialize acul functions
 - `BUILD_TESTS`: Enable testing
 - `ENABLE_COVERAGE`: Enable code coverage
 
