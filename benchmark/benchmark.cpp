@@ -8,10 +8,11 @@
 #include <benchmark/benchmark.h>
 #include <cfloat>
 #include <chrono>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <random>
 #include <vector>
+#include "glm/glm/glm.hpp"
+#include "glm/glm/gtc/matrix_transform.hpp"
+
 
 constexpr int N = 1000;
 static std::vector<glm::vec3> glm3_a(N), glm3_b(N), glm3_out(N);
@@ -77,33 +78,49 @@ static void InitData()
 }
 
 // Macro to report stats
-#define REPORT_STATS(bytes_per_iter)                                                                             \
-    do {                                                                                                         \
-        double avg = sum_cps / state.iterations();                                                               \
-        state.counters["cps_min"] = min_cps;                                                                     \
-        state.counters["cps_avg"] = avg;                                                                         \
-        state.counters["cps_max"] = max_cps;                                                                     \
-        state.counters["MiB/s"] = benchmark::Counter(static_cast<double>((bytes_per_iter) * state.iterations()), \
-                                                     benchmark::Counter::kIsRate, benchmark::Counter::kIs1024);  \
+#define REPORT_STATS(bytes_per_op)                                                      \
+    do {                                                                                \
+        const double cps_avg = (total_dt > 0.0) ? (double(total_ops) / total_dt) : 0.0; \
+        state.counters["cps_min"] = min_cps;                                            \
+        state.counters["cps_avg"] = cps_avg;                                            \
+        state.counters["cps_max"] = max_cps;                                            \
+        state.counters["MiB/s"] = (cps_avg * double(bytes_per_op)) / (1024.0 * 1024.0); \
     } while (0)
 
-#define RUN_BENCHMARK(C, FUNC)                                      \
-    InitData();                                                     \
-    double min_cps = DBL_MAX, max_cps = 0.0, sum_cps = 0.0;         \
-    const int64_t bytes_per_iter = N * sizeof(C);                   \
-    for (auto _ : state)                                            \
-    {                                                               \
-        auto t0 = std::chrono::high_resolution_clock::now();        \
-        for (int i = 0; i < N; ++i) benchmark::DoNotOptimize(FUNC); \
-        auto t1 = std::chrono::high_resolution_clock::now();        \
-        double dt = std::chrono::duration<double>(t1 - t0).count(); \
-        double cps = N / dt;                                        \
-        sum_cps += cps;                                             \
-        min_cps = std::min(min_cps, cps);                           \
-        max_cps = std::max(max_cps, cps);                           \
-        state.SetIterationTime(dt);                                 \
-    }                                                               \
-    REPORT_STATS(bytes_per_iter);
+#define RUN_BENCHMARK(C, FUNC)                                                         \
+    InitData();                                                                        \
+    do {                                                                               \
+        const double target_ms = 8.0;                                                  \
+        const double target_s = target_ms / 1000.0;                                    \
+                                                                                       \
+        double min_cps = DBL_MAX, max_cps = 0.0;                                       \
+        double total_dt = 0.0;                                                         \
+        uint64_t total_ops = 0;                                                        \
+        const size_t OPS_PER_BATCH = size_t(N);                                        \
+                                                                                       \
+        for (auto _ : state)                                                           \
+        {                                                                              \
+            double acc_dt = 0.0;                                                       \
+            uint64_t acc_ops = 0;                                                      \
+            do {                                                                       \
+                auto t0 = std::chrono::high_resolution_clock::now();                   \
+                for (int i = 0; i < N; ++i) benchmark::DoNotOptimize(FUNC);            \
+                auto t1 = std::chrono::high_resolution_clock::now();                   \
+                double dt = std::chrono::duration<double>(t1 - t0).count();            \
+                acc_dt += dt;                                                          \
+                acc_ops += OPS_PER_BATCH;                                              \
+            } while (acc_dt < target_s);                                               \
+                                                                                       \
+            const double cps_iter = (acc_dt > 0.0) ? (double(acc_ops) / acc_dt) : 0.0; \
+            if (cps_iter < min_cps) min_cps = cps_iter;                                \
+            if (cps_iter > max_cps) max_cps = cps_iter;                                \
+            total_dt += acc_dt;                                                        \
+            total_ops += acc_ops;                                                      \
+            state.SetIterationTime(acc_dt);                                            \
+        }                                                                              \
+        const size_t BYTES_PER_OP = sizeof(C);                                         \
+        REPORT_STATS(BYTES_PER_OP);                                                    \
+    } while (0)
 
 // vec3 tests
 
