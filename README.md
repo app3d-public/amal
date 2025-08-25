@@ -2,9 +2,10 @@
 
 **Amal** is a C++ header-only math library, developed as part of the App3D project. It is designed specifically for high-performance real-time applications, such as 3D rendering and interactive tools.
 
-> [!NOTE] Amal is not a general-purpose or scientific math library.
-All algorithms are optimized for speed over numerical precision.  
-Do not use Amal for scientific computing, high-precision modeling, or anywhere strict numerical guarantees are required.
+> [!NOTE]
+> Amal is not a general-purpose or scientific math library.
+> All algorithms are optimized for speed over numerical precision.  
+> Do not use Amal for scientific computing, high-precision modeling, or anywhere strict numerical guarantees are required.
 
 Structures are aligned in accordance with std140.\
 The amal is not a fully constexpr-ready library by default settings in accordance with using SIMD and FMA instructions, which can't be calculated at compile time. By default settings, you can access constexpr base constructors. Functions and operators are not supported. To enable the constexpr functions, you need to disable FMA and SIMD using flags described below.
