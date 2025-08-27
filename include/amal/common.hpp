@@ -74,7 +74,7 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD floor(AMAL_VEC_SELF const &v)
     {
-        if constexpr (std::is_floating_point_v<T>)
+        if constexpr (is_floating_point_v<T>)
             return AMAL_VEC_SELF(internal::floor(v.s));
         else
             return AMAL_VEC_SELF(v.s);
@@ -90,7 +90,7 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD round(AMAL_VEC_SELF const &v)
     {
-        if constexpr (std::is_floating_point_v<T>)
+        if constexpr (is_floating_point_v<T>)
             return AMAL_VEC_SELF(internal::round(v.s));
         else
             return AMAL_VEC_SELF(v.s);
@@ -116,7 +116,7 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD ceil(AMAL_VEC_SELF const &v)
     {
-        if constexpr (std::is_floating_point_v<T>)
+        if constexpr (is_floating_point_v<T>)
             return AMAL_VEC_SELF(internal::ceil(v.s));
         else
             return AMAL_VEC_SELF(v.s);
@@ -132,7 +132,7 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD trunc(AMAL_VEC_SELF const &v)
     {
-        if constexpr (std::is_floating_point_v<T>)
+        if constexpr (is_floating_point_v<T>)
             return AMAL_VEC_SELF(internal::trunc(v.s));
         else
             return AMAL_VEC_SELF(v.s);

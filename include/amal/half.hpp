@@ -112,10 +112,61 @@ namespace amal
 
     inline constexpr half operator+(half arg) { return arg; }
     inline constexpr half operator-(half arg) { return half(static_cast<internal::uint16>(arg.data ^ 0x8000)); }
+
     inline constexpr half operator+(half x, half y) { return half(static_cast<float>(x) + static_cast<float>(y)); }
+
+    template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+    inline constexpr float operator+(half x, T y)
+    {
+        return static_cast<float>(x) + y;
+    }
+
+    template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+    inline constexpr float operator+(T x, half y)
+    {
+        return x + static_cast<float>(y);
+    }
+
     inline constexpr half operator-(half x, half y) { return half(static_cast<float>(x) - static_cast<float>(y)); }
+    template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+    inline constexpr float operator-(half x, T y)
+    {
+        return static_cast<float>(x) - y;
+    }
+
+    template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+    inline constexpr float operator-(T x, half y)
+    {
+        return x - static_cast<float>(y);
+    }
+
     inline constexpr half operator*(half x, half y) { return half(static_cast<float>(x) * static_cast<float>(y)); }
+
+    template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+    inline constexpr float operator*(half x, T y)
+    {
+        return static_cast<float>(x) * y;
+    }
+
+    template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+    inline constexpr float operator*(T x, half y)
+    {
+        return x * static_cast<float>(y);
+    }
+
     inline constexpr half operator/(half x, half y) { return half(static_cast<float>(x) / static_cast<float>(y)); }
+
+    template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+    inline constexpr float operator/(half x, T y)
+    {
+        return static_cast<float>(x) / y;
+    }
+
+    template <typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+    inline constexpr float operator/(T x, half y)
+    {
+        return x / static_cast<float>(y);
+    }
 
     inline constexpr half fabs(half arg) { return half(static_cast<internal::uint16>(arg.data & 0x7FFF)); }
     inline constexpr half abs(half arg) { return fabs(arg); }

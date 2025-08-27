@@ -136,98 +136,53 @@ namespace acul
 
     inline string to_string(const amal::mat2 &m)
     {
-        return format("mat2([[%f, %f]; [%f, %f]])", m[0].x, m[1].x, m[0].y, m[1].y);
+        return format("mat2([[%f, %f]; [%f, %f]])", m[0][0], m[0][1], m[1][0], m[1][1]);
     }
 
     inline string to_string(const amal::mat3 &m)
     {
-        return format("mat3([[%f, %f, %f]; [%f, %f, %f]; [%f, %f, %f]])", m[0].x, m[1].x, m[2].x, m[0].y, m[1].y,
-                      m[2].y, m[0].z, m[1].z, m[2].z);
+        return format("mat3([[%f, %f, %f]; [%f, %f, %f]; [%f, %f, %f]])", m[0][0], m[0][1], m[0][2], m[1][0], m[1][1],
+                      m[1][2], m[2][0], m[2][1], m[2][2]);
     }
 
     inline string to_string(const amal::mat4 &m)
     {
-        return format("mat4([[%f, %f, %f, %f]; [%f, %f, %f, %f]; [%f, %f, %f, %f]; [%f, %f, %f, %f]])", m[0].x, m[1].x,
-                      m[2].x, m[3].x, m[0].y, m[1].y, m[2].y, m[3].y, m[0].z, m[1].z, m[2].z, m[3].z, m[0].w, m[1].w,
-                      m[2].w, m[3].w);
+        return format("mat4([[%f, %f, %f, %f]; [%f, %f, %f, %f]; [%f, %f, %f, %f]; [%f, %f, %f, %f]])", m[0][0],
+                      m[0][1], m[0][2], m[0][3], m[1][0], m[1][1], m[1][2], m[1][3], m[2][0], m[2][1], m[2][2], m[2][3],
+                      m[3][0], m[3][1], m[3][2], m[3][3]);
     }
 
     inline string to_string(const amal::mat2x3 &m)
     {
-        return format("mat2x3([[%f, %f]; [%f, %f]; [%f, %f]])", m[0].x, m[1].x, m[0].y, m[1].y, m[0].z, m[1].z);
+        return format("mat2x3([[%f, %f]; [%f, %f]; [%f, %f]])", m[0][0], m[0][1], m[1][0], m[1][1], m[2][0], m[2][1]);
     }
 
     inline string to_string(const amal::mat3x2 &m)
     {
-        return format("mat3x2([[%f, %f, %f]; [%f, %f, %f]])", m[0].x, m[1].x, m[2].x, m[0].y, m[1].y, m[2].y);
+        return format("mat3x2([[%f, %f, %f]; [%f, %f, %f]])", m[0][0], m[0][1], m[0][2], m[1][0], m[1][1], m[1][2]);
     }
 
     inline string to_string(const amal::mat2x4 &m)
     {
-        return format("mat2x4([[%f, %f]; [%f, %f]; [%f, %f]; [%f, %f]])", m[0].x, m[1].x, m[0].y, m[1].y, m[0].z,
-                      m[1].z, m[0].w, m[1].w);
+        return format("mat2x4([[%f, %f]; [%f, %f]; [%f, %f]; [%f, %f]])", m[0][0], m[0][1], m[1][0], m[1][1], m[2][0],
+                      m[2][1], m[3][0], m[3][1]);
     }
 
     inline string to_string(const amal::mat4x2 &m)
     {
-        return format("mat4x2([[%f, %f, %f, %f]; [%f, %f, %f, %f]])", m[0].x, m[1].x, m[2].x, m[3].x, m[0].y, m[1].y,
-                      m[2].y, m[3].y);
+        return format("mat4x2([[%f, %f, %f, %f]; [%f, %f, %f, %f]])", m[0][0], m[0][1], m[0][2], m[0][3], m[1][0],
+                      m[1][1], m[1][2], m[1][3]);
     }
 
     inline string to_string(const amal::mat3x4 &m)
     {
-        return format("mat3x4([[%f, %f, %f]; [%f, %f, %f]; [%f, %f, %f]; [%f, %f, %f]])", m[0].x, m[1].x, m[2].x,
-                      m[0].y, m[1].y, m[2].y, m[0].z, m[1].z, m[2].z, m[0].w, m[1].w, m[2].w);
+        return format("mat3x4([[%f, %f, %f]; [%f, %f, %f]; [%f, %f, %f]; [%f, %f, %f]])", m[0][0], m[0][1], m[0][2],
+                      m[1][0], m[1][1], m[1][2], m[2][0], m[2][1], m[2][2], m[3][0], m[3][1], m[3][2]);
     }
 
     inline string to_string(const amal::mat4x3 &m)
     {
-        return format("mat4x3([[%f, %f, %f, %f]; [%f, %f, %f, %f]; [%f, %f, %f, %f]])", m[0].x, m[1].x, m[2].x, m[3].x,
-                      m[0].y, m[1].y, m[2].y, m[3].y, m[0].z, m[1].z, m[2].z, m[3].z);
-    }
-
-    inline string to_string(const amal::dmat2 &m)
-    {
-        return format("dmat2([[%lf, %lf]; [%lf, %lf]])", m[0].x, m[1].x, m[0].y, m[1].y);
-    }
-    inline string to_string(const amal::dmat3 &m)
-    {
-        return format("dmat3([[%lf, %lf, %lf]; [%lf, %lf, %lf]; [%lf, %lf, %lf]])", m[0].x, m[1].x, m[2].x, m[0].y,
-                      m[1].y, m[2].y, m[0].z, m[1].z, m[2].z);
-    }
-    inline string to_string(const amal::dmat4 &m)
-    {
-        return format("dmat4([[%lf, %lf, %lf, %lf]; [%lf, %lf, %lf, %lf]; [%lf, %lf, %lf, %lf]; [%lf, %lf, %lf, %lf]])",
-                      m[0].x, m[1].x, m[2].x, m[3].x, m[0].y, m[1].y, m[2].y, m[3].y, m[0].z, m[1].z, m[2].z, m[3].z,
-                      m[0].w, m[1].w, m[2].w, m[3].w);
-    }
-
-    inline string to_string(const amal::dmat2x3 &m)
-    {
-        return format("dmat2x3([[%lf, %lf]; [%lf, %lf]; [%lf, %lf]])", m[0].x, m[1].x, m[0].y, m[1].y, m[0].z, m[1].z);
-    }
-    inline string to_string(const amal::dmat3x2 &m)
-    {
-        return format("dmat3x2([[%lf, %lf, %lf]; [%lf, %lf, %lf]])", m[0].x, m[1].x, m[2].x, m[0].y, m[1].y, m[2].y);
-    }
-    inline string to_string(const amal::dmat2x4 &m)
-    {
-        return format("dmat2x4([[%lf, %lf]; [%lf, %lf]; [%lf, %lf]; [%lf, %lf]])", m[0].x, m[1].x, m[0].y, m[1].y,
-                      m[0].z, m[1].z, m[0].w, m[1].w);
-    }
-    inline string to_string(const amal::dmat4x2 &m)
-    {
-        return format("dmat4x2([[%lf, %lf, %lf, %lf]; [%lf, %lf, %lf, %lf]])", m[0].x, m[1].x, m[2].x, m[3].x, m[0].y,
-                      m[1].y, m[2].y, m[3].y);
-    }
-    inline string to_string(const amal::dmat3x4 &m)
-    {
-        return format("dmat3x4([[%lf, %lf, %lf]; [%lf, %lf, %lf]; [%lf, %lf, %lf]; [%lf, %lf, %lf]])", m[0].x, m[1].x,
-                      m[2].x, m[0].y, m[1].y, m[2].y, m[0].z, m[1].z, m[2].z, m[0].w, m[1].w, m[2].w);
-    }
-    inline string to_string(const amal::dmat4x3 &m)
-    {
-        return format("dmat4x3([[%lf, %lf, %lf, %lf]; [%lf, %lf, %lf, %lf]; [%lf, %lf, %lf, %lf]])", m[0].x, m[1].x,
-                      m[2].x, m[3].x, m[0].y, m[1].y, m[2].y, m[3].y, m[0].z, m[1].z, m[2].z, m[3].z);
+        return format("mat4x3([[%f, %f, %f, %f]; [%f, %f, %f, %f]; [%f, %f, %f, %f]])", m[0][0], m[0][1], m[0][2],
+                      m[0][3], m[1][0], m[1][1], m[1][2], m[1][3], m[2][0], m[2][1], m[2][2], m[2][3]);
     }
 } // namespace acul
