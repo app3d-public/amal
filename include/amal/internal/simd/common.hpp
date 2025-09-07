@@ -68,7 +68,7 @@ namespace amal
     #else
         inline __v4sf round(__v4sf x)
         {
-            const __v4si sign_mask = {0x80000000, 0x80000000, 0x80000000, 0x80000000};
+            const __v4si sign_mask = {INT32_MIN, INT32_MIN, INT32_MIN, INT32_MIN};
             const __v4sf magic = _mm_set1_ps(8388608.0f);
 
             __v4sf sgn = reinterpret_cast<__v4sf>(reinterpret_cast<__v4si>(x) & sign_mask);
@@ -103,7 +103,8 @@ namespace amal
 
         inline __v4sf trunc(__v4sf x)
         {
-            __v4sf is_neg = _mm_cmplt_ps(x, 0.0f);
+            const __v4sf zero   = _mm_setzero_ps();
+            __v4sf is_neg = _mm_cmplt_ps(x, zero);
             __v4sf floored = floor(x);
             __v4sf ceiled = ceil(x);
             return _mm_or_ps(_mm_and_ps(is_neg, ceiled), _mm_andnot_ps(is_neg, floored));

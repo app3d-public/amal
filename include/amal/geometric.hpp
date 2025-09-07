@@ -1,8 +1,10 @@
 #pragma once
 
 #include "exponential.hpp"
-#include "internal/simd/common.hpp"
-#include "internal/simd/geometric.hpp"
+#ifdef AMAL_SIMD_ENABLE
+    #include "internal/simd/common.hpp"
+    #include "internal/simd/geometric.hpp"
+#endif
 #include "vector.hpp"
 
 namespace amal

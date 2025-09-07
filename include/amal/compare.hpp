@@ -2,7 +2,9 @@
 
 #include "internal/fwd/matrix.hpp"
 #include "internal/fwd/vector.hpp"
-#include "internal/simd/compare.hpp"
+#ifdef AMAL_SIMD_ENABLE
+    #include "internal/simd/compare.hpp"
+#endif
 
 namespace amal
 {

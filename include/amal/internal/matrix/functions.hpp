@@ -3,8 +3,10 @@
 #include <amal/common.hpp>
 #include <amal/internal/vec4.hpp>
 #include "../fwd/matrix.hpp"
-#include "../simd/common.hpp"
-#include "../simd/matrix.hpp"
+#ifdef AMAL_SIMD_ENABLE
+    #include "../simd/common.hpp"
+    #include "../simd/matrix.hpp"
+#endif
 
 namespace amal
 {

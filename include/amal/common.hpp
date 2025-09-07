@@ -1,18 +1,22 @@
 #pragma once
 
 #include <algorithm>
-#include "internal/simd/common.hpp"
+#ifdef AMAL_SIMD_ENABLE
+    #include "internal/simd/common.hpp"
+#endif
 #include "compare.hpp"
 #include "vector.hpp"
 
 namespace amal
 {
     using std::abs;
+#ifdef AMAL_SIMD_ENABLE
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD abs(AMAL_VEC_SELF const &v)
     {
         return AMAL_VEC_SELF(internal::abs(v.s));
     }
+#endif
 
     template <length_t N, typename T, bool aligned>
     inline constexpr AMAL_VEC_VAL_NOSIMD abs(AMAL_NVEC(N) const &v)
@@ -23,11 +27,13 @@ namespace amal
             return internal::create_by_call(v, std::abs);
     }
 
+#ifdef AMAL_SIMD_ENABLE
     template <length_t N, typename T, typename U, bool aligned>
     inline AMAL_VEC_VAL_SIMD mix(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y, AMAL_VEC(N, U, aligned) const &a)
     {
         return AMAL_VEC_SELF(internal::mix(x.s, y.s, a.s));
     }
+#endif
 
     template <length_t N, typename T, typename U, bool aligned>
     inline constexpr AMAL_VEC_VAL_NOSIMD mix(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y,
@@ -71,6 +77,7 @@ namespace amal
     }
 
     using std::floor;
+#ifdef AMAL_SIMD_ENABLE
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD floor(AMAL_VEC_SELF const &v)
     {
@@ -79,6 +86,7 @@ namespace amal
         else
             return AMAL_VEC_SELF(v.s);
     }
+#endif
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_NOSIMD floor(AMAL_VEC_SELF const &v)
@@ -87,6 +95,7 @@ namespace amal
     }
 
     using std::round;
+#ifdef AMAL_SIMD_ENABLE
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD round(AMAL_VEC_SELF const &v)
     {
@@ -95,6 +104,7 @@ namespace amal
         else
             return AMAL_VEC_SELF(v.s);
     }
+#endif
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_NOSIMD round(AMAL_VEC_SELF const &v)
@@ -113,6 +123,7 @@ namespace amal
     }
 
     using std::ceil;
+#ifdef AMAL_SIMD_ENABLE
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD ceil(AMAL_VEC_SELF const &v)
     {
@@ -121,6 +132,7 @@ namespace amal
         else
             return AMAL_VEC_SELF(v.s);
     }
+#endif
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_NOSIMD ceil(AMAL_VEC_SELF const &v)
@@ -129,6 +141,7 @@ namespace amal
     }
 
     using std::trunc;
+#ifdef AMAL_SIMD_ENABLE
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD trunc(AMAL_VEC_SELF const &v)
     {
@@ -137,6 +150,7 @@ namespace amal
         else
             return AMAL_VEC_SELF(v.s);
     }
+#endif
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_NOSIMD trunc(AMAL_VEC_SELF const &v)
@@ -205,11 +219,13 @@ namespace amal
     }
 
     using std::min;
+#ifdef AMAL_SIMD_ENABLE
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD min(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y)
     {
         return AMAL_VEC_SELF(internal::min(x.s, y.s));
     }
+#endif
 
     template <length_t N, typename T, bool aligned>
     inline constexpr AMAL_VEC_VAL_NOSIMD min(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y)
@@ -219,11 +235,13 @@ namespace amal
     }
 
     using std::max;
+#ifdef AMAL_SIMD_ENABLE
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD max(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y)
     {
         return AMAL_VEC_SELF(internal::max(x.s, y.s));
     }
+#endif
 
     template <length_t N, typename T, bool aligned>
     inline constexpr AMAL_VEC_VAL_NOSIMD max(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y)
