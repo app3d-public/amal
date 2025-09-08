@@ -4,6 +4,7 @@
 #ifdef AMAL_SIMD_ENABLE
     #include "internal/simd/common.hpp"
     #include "internal/simd/geometric.hpp"
+    #include "internal/simd/exponential.hpp"
 #endif
 #include "vector.hpp"
 
@@ -62,11 +63,13 @@ namespace amal
         return abs(x);
     }
 
+#ifdef AMAL_SIMD_ENABLE
     template <length_t N, typename T, bool aligned>
     inline AMAL_TYPE_SIMD(AMAL_VEC_SELF, T) length(AMAL_VEC_SELF const &v)
     {
         return internal::extract_scalar(internal::sqrt(internal::dot(v.s, v.s)));
     }
+#endif
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_TYPE_NOSIMD(AMAL_VEC_SELF, T) length(AMAL_VEC_SELF const &v)
@@ -98,12 +101,14 @@ namespace amal
         return AMAL_NVEC(3)(v1.y * v2.z - v2.y * v1.z, v1.z * v2.x - v2.z * v1.x, v1.x * v2.y - v2.x * v1.y);
     }
 
+#ifdef AMAL_SIMD_ENABLE
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD normalize(AMAL_VEC_SELF const &v)
     {
         static_assert(is_floating_point_v<T>, "Normalize only valid for floating-point types");
         return AMAL_VEC_SELF(v.s * internal::inverse_sqrt(internal::dot(v.s, v.s)));
     }
+#endif
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_NOSIMD normalize(AMAL_VEC_SELF const &v)

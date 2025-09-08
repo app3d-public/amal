@@ -1,9 +1,9 @@
 #pragma once
 
+#include "vector.hpp"
 #ifdef AMAL_SIMD_ENABLE
     #include "internal/simd/exponential.hpp"
 #endif
-#include "vector.hpp"
 
 namespace amal
 {
@@ -51,12 +51,13 @@ namespace amal
     }
 
     using ::sqrt;
-
+#ifdef AMAL_SIMD_ENABLE
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD sqrt(AMAL_VEC_SELF const &v)
     {
         return AMAL_VEC_SELF(internal::sqrt(v.s));
     }
+#endif
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_NOSIMD sqrt(AMAL_VEC_SELF const &v)
@@ -71,11 +72,13 @@ namespace amal
         return T(1) / sqrt(x);
     }
 
+#ifdef AMAL_SIMD_ENABLE
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD inverse_sqrt(AMAL_VEC_SELF const &v)
     {
         return AMAL_VEC_SELF(internal::inverse_sqrt(v.s));
     }
+#endif
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_NOSIMD inverse_sqrt(AMAL_VEC_SELF const &v)
