@@ -1,11 +1,11 @@
 #pragma once
 
 #include <algorithm>
+#include "vector.hpp"
 #ifdef AMAL_SIMD_ENABLE
     #include "internal/simd/common.hpp"
 #endif
 #include "compare.hpp"
-#include "vector.hpp"
 
 namespace amal
 {
