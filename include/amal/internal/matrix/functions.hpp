@@ -224,13 +224,13 @@ namespace amal
     }
 #else
     template <typename T, bool aligned>
-    inline constexpr AMAL_TYPE_NOSIMD(AMAL_NMAT(2, 2), T) determinant(AMAL_NMAT(2, 2) const &m)
+    inline constexpr T determinant(AMAL_NMAT(2, 2) const &m)
     {
         return (m[0][0] * m[1][1]) - (m[0][1] * m[1][0]);
     }
 
     template <typename T, bool aligned>
-    inline constexpr AMAL_TYPE_NOSIMD(AMAL_NMAT(3, 3), T) determinant(AMAL_NMAT(3, 3) const &m)
+    inline constexpr T determinant(AMAL_NMAT(3, 3) const &m)
     {
         return (m[0][0] * (m[1][1] * m[2][2] - m[2][1] * m[1][2])) -
                (m[1][0] * (m[0][1] * m[2][2] - m[2][1] * m[0][2])) +
@@ -238,7 +238,7 @@ namespace amal
     }
 
     template <typename T, bool aligned>
-    inline constexpr AMAL_TYPE_NOSIMD(AMAL_NMAT(4, 4), T) determinant(AMAL_NMAT(4, 4) const &m)
+    inline constexpr T determinant(AMAL_NMAT(4, 4) const &m)
     {
         T s0 = m[2][2] * m[3][3] - m[3][2] * m[2][3];
         T s1 = m[2][1] * m[3][3] - m[3][1] * m[2][3];
@@ -254,7 +254,7 @@ namespace amal
     }
 
     template <typename T, bool aligned>
-    AMAL_NMAT_VAL_NOSIMD(2, 2)
+    AMAL_NMAT(2, 2)
     inverse_matrix(AMAL_NMAT(2, 2) const &m)
     {
         static_assert(is_floating_point_v<T>, "inverse_matrix only supports floating point types");
@@ -263,7 +263,7 @@ namespace amal
     }
 
     template <typename T, bool aligned>
-    AMAL_NMAT_VAL_NOSIMD(3, 3)
+    AMAL_NMAT(3, 3)
     inverse_matrix(AMAL_NMAT(3, 3) const &m)
     {
         static_assert(is_floating_point_v<T>, "inverse_matrix only supports floating point types");
@@ -289,7 +289,7 @@ namespace amal
     }
 
     template <typename T, bool aligned>
-    AMAL_NMAT_VAL_NOSIMD(4, 4)
+    AMAL_NMAT(4, 4)
     inverse_matrix(AMAL_NMAT(4, 4) const &m)
     {
         static_assert(is_floating_point_v<T>, "inverse_matrix only supports floating point types");

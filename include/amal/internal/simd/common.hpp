@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #if defined(__SSE2__)
     #include <xmmintrin.h>
 #endif

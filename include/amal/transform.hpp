@@ -134,7 +134,7 @@ namespace amal
     }
 #else
     template <typename T, bool aligned>
-    inline AMAL_MAT4_NOSIMD rotate(mat4 const &m, T angle, AMAL_NVEC(3) const &v)
+    inline AMAL_MAT4_NOSIMD(4) rotate(mat4 const &m, T angle, AMAL_NVEC(3) const &v)
     {
         static_assert(is_floating_point_v<T>, "rotate only supports floating point types");
         T const a = angle;

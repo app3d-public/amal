@@ -53,8 +53,14 @@ namespace amal
             __v4sf t1 = _mm_unpackhi_ps(in[0], in[1]);
             out[0] = _mm_movelh_ps(t0, t1);
             out[1] = _mm_movehl_ps(t1, t0);
+    #if defined(__SSE4_1__)
             out[2] = _mm_shuffle_ps(in[0], in[1], _MM_SHUFFLE(2, 2, 2, 2));
             out[2] = _mm_insert_ps(out[2], in[2], 0b00100000);
+    #else
+            __v4sf z = _mm_xor_ps(in[2], in[2]);
+            __v4sf t3 = _mm_unpackhi_ps(in[2], z);
+            out[2] = _mm_movelh_ps(t1, t3);
+    #endif
         }
 
         template <>
@@ -360,8 +366,20 @@ namespace amal
             __m128 vs = _mm_set1_ps(s);
 
             __m128 axis = axis4;
+    #if defined(__SSE4_1__)
             __m128 len2 = _mm_dp_ps(axis, axis, 0x7F);
             axis = _mm_mul_ps(axis, _mm_rsqrt_ps(len2));
+    #else
+            __m128 t = _mm_mul_ps(axis, axis);
+            __m128 shuf = _mm_shuffle_ps(t, t, _MM_SHUFFLE(2, 3, 0, 1));
+            __m128 sum2 = _mm_add_ps(t, shuf);
+            __m128 dot = _mm_add_ss(sum2, _mm_shuffle_ps(sum2, sum2, _MM_SHUFFLE(1, 1, 1, 1)));
+            dot = _mm_shuffle_ps(dot, dot, _MM_SHUFFLE(0, 0, 0, 0));
+            __m128 invlen = _mm_rsqrt_ps(dot);
+            const __m128 mask_xyz = _mm_castsi128_ps(_mm_set_epi32(0, -1, -1, -1));
+            invlen = _mm_and_ps(invlen, mask_xyz);
+            axis = _mm_mul_ps(axis, invlen);
+    #endif
 
             __m128 ic = _mm_sub_ps(one, vc);
             __m128 zero = _mm_setzero_ps();
@@ -555,18 +573,6 @@ namespace amal
             out[1] = _mm_unpackhi_epi64(ab_lo, cd_lo); // a1 b1 c1 d1
             out[2] = _mm_unpacklo_epi64(ab_hi, cd_hi); // a2 b2 c2 d2
             out[3] = _mm_unpackhi_epi64(ab_hi, cd_hi); // a3 b3 c3 d3
-        }
-
-        static inline __v4si mm_mullo_epi32_compat(__v4si a, __v4si b)
-        {
-    #if defined(__SSE4_1__) || defined(__AVX2__)
-            return _mm_mullo_epi32(a, b);
-    #else
-            __m128i lo = _mm_mul_epu32(a, b);
-            __m128i hi = _mm_mul_epu32(_mm_srli_si128(a, 4), _mm_srli_si128(b, 4));
-            hi = _mm_shuffle_epi32(hi, _MM_SHUFFLE(0, 0, 2, 0));
-            return _mm_unpacklo_epi64(lo, hi);
-    #endif
         }
 
     #include <amal/internal/matrix_multiply_v4si.hpp>
