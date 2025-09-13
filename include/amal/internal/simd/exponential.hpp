@@ -12,17 +12,17 @@ namespace amal
     namespace internal
     {
 #if defined(__SSE2__)
-        inline __v4sf sqrt(__v4sf x) { return _mm_sqrt_ps(x); }
+        inline __m128_u sqrt(__m128_u x) { return _mm_sqrt_ps(x); }
 
-        inline __v4sf inverse_sqrt(__v4sf x) { return _mm_rsqrt_ps(x); }
+        inline __m128_u inverse_sqrt(__m128_u x) { return _mm_rsqrt_ps(x); }
 #endif
 #if defined(__AVX__)
-        inline __v4df sqrt(__v4df x) { return _mm256_sqrt_pd(x); }
+        inline __m256d_u sqrt(__m256d_u x) { return _mm256_sqrt_pd(x); }
 
-        inline __v4df inverse_sqrt(__v4df x)
+        inline __m256d_u inverse_sqrt(__m256d_u x)
         {
-            __v4df sqrt_x = _mm256_sqrt_pd(x);
-            __v4df one = _mm256_set1_pd(1.0);
+            __m256d_u sqrt_x = _mm256_sqrt_pd(x);
+            __m256d_u one = _mm256_set1_pd(1.0);
             return _mm256_div_pd(one, sqrt_x);
         }
 #endif

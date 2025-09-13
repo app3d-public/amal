@@ -35,46 +35,17 @@ foreach(C RANGE 2 4)
     endforeach()
 endforeach()
 
-set(MATRIX_MULTIPLY_NOSIMD_TEMPLATE "${CMAKE_CURRENT_SOURCE_DIR}/templates/matrix_multiply_nosimd.tpp.j2")
-set(MATRIX_MULTIPLY_SIMD_TEMPLATE   "${CMAKE_CURRENT_SOURCE_DIR}/templates/matrix_multiply_simd.tpp.j2")
+set(MATRIX_MULTIPLY_TEMPLATE   "${CMAKE_CURRENT_SOURCE_DIR}/templates/matrix_multiply.tpp.j2")
+set(MATRIX_MULTIPLY_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/matrix_multiply.py")
+set(MATRIX_MULTIPLY_OUT "${CMAKE_CURRENT_BINARY_DIR}/amal/internal/matrix_multiply.hpp")
 
-set(MULTIPLY_NOSIMD_SCRIPTS
-    "${CMAKE_CURRENT_SOURCE_DIR}/matrix_multiply_linear.py"
-    "${CMAKE_CURRENT_SOURCE_DIR}/matrix_multiply_fma.py"
+add_custom_command(
+    OUTPUT ${MATRIX_MULTIPLY_OUT}
+    COMMAND ${CMAKE_COMMAND} -E echo "Generating ${MATRIX_MULTIPLY_OUT}"
+    COMMAND ${Python3_EXECUTABLE} ${MATRIX_MULTIPLY_SCRIPT} > ${MATRIX_MULTIPLY_OUT}
+    DEPENDS ${MATRIX_MULTIPLY_SCRIPT} ${MATRIX_MULTIPLY_TEMPLATE}
+    VERBATIM
 )
-
-set(MULTIPLY_SIMD_SCRIPTS
-    "${CMAKE_CURRENT_SOURCE_DIR}/matrix_multiply_v4si.py"
-    "${CMAKE_CURRENT_SOURCE_DIR}/matrix_multiply_v4sf.py"
-    "${CMAKE_CURRENT_SOURCE_DIR}/matrix_multiply_v4df.py"
-)
-
-foreach(PY_SCRIPT IN LISTS MULTIPLY_NOSIMD_SCRIPTS)
-    get_filename_component(SCRIPT_NAME ${PY_SCRIPT} NAME_WE)
-    set(OUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/amal/internal/${SCRIPT_NAME}.hpp")
-
-    add_custom_command(
-        OUTPUT ${OUT_FILE}
-        COMMAND ${CMAKE_COMMAND} -E echo "Generating ${OUT_FILE}"
-        COMMAND ${Python3_EXECUTABLE} ${PY_SCRIPT} > ${OUT_FILE}
-        DEPENDS ${PY_SCRIPT} ${MATRIX_MULTIPLY_NOSIMD_TEMPLATE}
-        VERBATIM
-    )
-    list(APPEND GENERATED_HEADERS ${OUT_FILE})
-endforeach()
-
-foreach(PY_SCRIPT IN LISTS MULTIPLY_SIMD_SCRIPTS)
-    get_filename_component(SCRIPT_NAME ${PY_SCRIPT} NAME_WE)
-    set(OUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/amal/internal/${SCRIPT_NAME}.hpp")
-
-    add_custom_command(
-        OUTPUT ${OUT_FILE}
-        COMMAND ${CMAKE_COMMAND} -E echo "Generating ${OUT_FILE}"
-        COMMAND ${Python3_EXECUTABLE} ${PY_SCRIPT} > ${OUT_FILE}
-        DEPENDS ${PY_SCRIPT} ${MATRIX_MULTIPLY_SIMD_TEMPLATE}
-        VERBATIM
-    )
-    list(APPEND GENERATED_HEADERS ${OUT_FILE})
-endforeach()
+list(APPEND GENERATED_HEADERS ${MATRIX_MULTIPLY_OUT})
 
 add_custom_target(amal_generated_headers DEPENDS ${GENERATED_HEADERS})

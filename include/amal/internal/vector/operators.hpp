@@ -507,7 +507,8 @@ namespace amal
     inline constexpr AMAL_VEC_SELF operator/(AMAL_VEC_SELF const &v, T scalar)
     {
         AMAL_VEC_SELF tmp(v);
-        return v /= scalar;
+        tmp /= scalar;
+        return tmp;
     }
 
     template <length_t N, typename T, bool aligned, length_t NB, typename TB, bool AB>

@@ -164,16 +164,6 @@ namespace amal
         return v - floor(v);
     }
 
-    template <length_t N, typename T, bool aligned>
-    inline AMAL_VEC_SELF mod(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y)
-    {
-#if defined(__FMA__)
-        return fma(-y, floor(x / y), x);
-#else
-        return x - y * floor(x / y);
-#endif
-    }
-
     template <length_t N, typename T, typename U, bool aligned>
     inline std::enable_if_t<is_arithmetic_v<U>, AMAL_VEC_SELF> mod(AMAL_VEC_SELF const &x, U scalar)
     {
@@ -189,31 +179,71 @@ namespace amal
 
     using std::fma;
     template <length_t N, typename T, bool aligned>
-    inline AMAL_VEC_SELF fma(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y, AMAL_VEC_SELF const &z)
+    inline AMAL_VEC_VAL_SIMD fma(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y, AMAL_VEC_SELF const &z)
     {
-        return x * y + z;
+        return AMAL_VEC_SELF(internal::fma(x.s, y.s, z.s));
     }
 
     template <length_t N, typename T, bool aligned>
-    inline AMAL_VEC_SELF splat_x(AMAL_VEC_SELF const &v)
+    inline AMAL_VEC_VAL_NOSIMD fma(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y, AMAL_VEC_SELF const &z)
+    {
+        return (x * y) + z;
+    }
+
+    template <length_t N, typename T, bool aligned>
+    inline AMAL_VEC_SELF mod(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y)
+    {
+#if defined(__FMA__)
+        return fma(-y, floor(x / y), x);
+#else
+        return x - y * floor(x / y);
+#endif
+    }
+
+    template <length_t N, typename T, bool aligned>
+    inline AMAL_VEC_VAL_SIMD splat_x(AMAL_VEC_SELF const &v)
+    {
+        return AMAL_VEC_SELF(internal::splat<0>(v.s));
+    }
+
+    template <length_t N, typename T, bool aligned>
+    inline AMAL_VEC_VAL_SIMD splat_y(AMAL_VEC_SELF const &v)
+    {
+        return AMAL_VEC_SELF(internal::splat<1>(v.s));
+    }
+
+    template <length_t N, typename T, bool aligned>
+    inline AMAL_VEC_VAL_SIMD splat_z(AMAL_VEC_SELF const &v)
+    {
+        return AMAL_VEC_SELF(internal::splat<2>(v.s));
+    }
+
+    template <length_t N, typename T, bool aligned>
+    inline AMAL_VEC_VAL_SIMD splat_w(AMAL_VEC_SELF const &v)
+    {
+        return AMAL_VEC_SELF(internal::splat<3>(v.s));
+    }
+
+    template <length_t N, typename T, bool aligned>
+    inline AMAL_VEC_VAL_NOSIMD splat_x(AMAL_VEC_SELF const &v)
     {
         return AMAL_VEC_SELF(v.x);
     }
 
     template <length_t N, typename T, bool aligned>
-    inline AMAL_VEC_SELF splat_y(AMAL_VEC_SELF const &v)
+    inline AMAL_VEC_VAL_NOSIMD splat_y(AMAL_VEC_SELF const &v)
     {
         return AMAL_VEC_SELF(v.y);
     }
 
     template <length_t N, typename T, bool aligned>
-    inline AMAL_VEC_SELF splat_z(AMAL_VEC_SELF const &v)
+    inline AMAL_VEC_VAL_NOSIMD splat_z(AMAL_VEC_SELF const &v)
     {
         return AMAL_VEC_SELF(v.z);
     }
 
     template <length_t N, typename T, bool aligned>
-    inline AMAL_VEC_SELF splat_w(AMAL_VEC_SELF const &v)
+    inline AMAL_VEC_VAL_NOSIMD splat_w(AMAL_VEC_SELF const &v)
     {
         return AMAL_VEC_SELF(v.w);
     }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstring>
 #include <type_traits>
 #if defined(__SSE2__)
     #include <emmintrin.h>
@@ -24,14 +25,16 @@
     #define AMAL_SIMD_ENABLE
 #endif
 
-#if defined(AMAL_FMA_ENABLE) && defined(AMAL_SIMD_ENABLE)
-    #define AMAL_CONSTEXPR constexpr
-#else
+#if defined(AMAL_FMA_ENABLE) or defined(AMAL_SIMD_ENABLE)
     #define AMAL_CONSTEXPR
+#else
+    #define AMAL_CONSTEXPR constexpr
 #endif
 
 #define AMAL_CEIL(a, b)    (((a % b) == 0) ? a / b : (a / b) + 1)
 #define AMAL_ALIGN_SIZE(a) (int(AMAL_CEIL(a, 4)) * 4)
+
+typedef int __v4si_u __attribute__((__vector_size__(16), __aligned__(1)));
 
 namespace amal
 {
@@ -66,12 +69,12 @@ namespace amal
     AMAL_SIMD_TYPE_BUILD(4, T, V);
 
 #if defined(__SSE2__)
-        AMAL_SIMD_TYPE_BUILD_GROUP(float, __v4sf);
-        AMAL_SIMD_TYPE_BUILD_GROUP(int, __v4si);
+        AMAL_SIMD_TYPE_BUILD_GROUP(float, __m128_u);
+        AMAL_SIMD_TYPE_BUILD_GROUP(int, __v4si_u);
 #endif
 
 #if defined(__AVX__)
-        AMAL_SIMD_TYPE_BUILD_GROUP(double, __v4df);
+        AMAL_SIMD_TYPE_BUILD_GROUP(double, __m256d_u);
 #endif
 
         template <typename V>

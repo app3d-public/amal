@@ -78,6 +78,12 @@ namespace amal
         return r;
     }
 
+    template<typename T, bool aligned>
+    inline constexpr mat4 translate(AMAL_VEC(3, T, aligned) const &v)
+    {
+        return translate(mat4(static_cast<T>(1)), v);
+    }
+
     template <typename T, bool aligned>
     inline AMAL_MAT4_SIMD(3) rotate(mat4 const &m, T angle, AMAL_NVEC(3) const &axis)
     {

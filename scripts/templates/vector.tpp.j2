@@ -68,12 +68,36 @@ namespace amal
 
         constexpr vec &operator=(vec const &v) = default;
 
-        template <typename U, bool A>
-        constexpr vec &operator=(AMAL_VEC({{ N }}, U, A) const &v)
+        template <length_t M, class U, bool A>
+        constexpr vec& operator=(AMAL_VEC(M, U, A) const& rhs)
         {
-            {%- for i in range(N) %}
-            {{ names[i] }} = static_cast<T>(v.{{ names[i] }});
-            {%- endfor %}
+            constexpr bool L_SIMD     = internal::is_simd_enabled_v<typename vec::simd_type::value_type>;
+            constexpr bool R_SIMD     = internal::is_simd_enabled_v<typename AMAL_VEC(M, U, A)::simd_type::value_type>;
+
+            if constexpr (L_SIMD && R_SIMD && std::is_same_v<T, U>)
+                this->s = rhs.s;
+            else
+            {
+                this->data[0] = static_cast<T>(rhs.data[0]);
+                this->data[1] = static_cast<T>(rhs.data[1]);
+
+                {% for i in range(2, N) -%}
+                if constexpr (M > {{i}}) this->data[{{i}}] = static_cast<T>(rhs.data[{{i}}]);
+                else                     this->data[{{i}}] = T(0);
+                {% endfor -%}
+
+                {%- if N < 4 -%}
+                if constexpr (aligned)
+                {
+                    {%- if N == 2 -%}
+                    this->data[2] = T(0);
+                    this->data[3] = T(0);
+                    {% elif N == 3 %}
+                    this->data[3] = T(0);
+                    {% endif %}
+                }
+                {%- endif %}
+            }
             return *this;
         }
 

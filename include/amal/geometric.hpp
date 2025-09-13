@@ -1,12 +1,14 @@
 #pragma once
 
+#include <cstdio>
 #include "exponential.hpp"
+#include "vector.hpp"
 #ifdef AMAL_SIMD_ENABLE
     #include "internal/simd/common.hpp"
-    #include "internal/simd/geometric.hpp"
     #include "internal/simd/exponential.hpp"
+    #include "internal/simd/geometric.hpp"
+
 #endif
-#include "vector.hpp"
 
 namespace amal
 {
@@ -16,25 +18,6 @@ namespace amal
         return internal::extract_scalar(internal::dot(v1.s, v2.s));
     }
 
-#if defined(AMAL_FMA_ENABLE)
-    template <typename T, bool aligned>
-    inline AMAL_TYPE_NOSIMD(AMAL_NVEC(2), T) dot(AMAL_NVEC(2) const &v1, AMAL_NVEC(2) const &v2)
-    {
-        return std::fma(v1.y, v2.y, v1.x * v2.x);
-    }
-
-    template <typename T, bool aligned>
-    inline AMAL_TYPE_NOSIMD(AMAL_NVEC(3), T) dot(AMAL_NVEC(3) const &v1, AMAL_NVEC(3) const &v2)
-    {
-        return std::fma(v1.z, v2.z, std::fma(v1.y, v2.y, v1.x * v2.x));
-    }
-
-    template <typename T, bool aligned>
-    inline AMAL_TYPE_NOSIMD(AMAL_NVEC(4), T) dot(AMAL_NVEC(4) const &v1, AMAL_NVEC(4) const &v2)
-    {
-        return std::fma(v1.w, v2.w, std::fma(v1.z, v2.z, std::fma(v1.y, v2.y, v1.x * v2.x)));
-    }
-#else
     template <typename T, bool aligned>
     inline constexpr AMAL_TYPE_NOSIMD(AMAL_NVEC(2), T) dot(AMAL_NVEC(2) const &v1, AMAL_NVEC(2) const &v2)
     {
@@ -55,7 +38,6 @@ namespace amal
         AMAL_NVEC(4) tmp(v1 * v2);
         return tmp.x + tmp.y + tmp.z + tmp.w;
     }
-#endif
 
     template <typename T>
     inline T length(T x)
@@ -170,19 +152,18 @@ namespace amal
         z
     };
 
-    template <typename T, bool aligned>
-    inline AMAL_NVEC(3) normal_by_axis(axis axis)
+    inline vec3 normal_by_axis(axis axis)
     {
         switch (axis)
         {
             case axis::x:
-                return AMAL_NVEC(3)(1, 0, 0);
+                return vec3(1, 0, 0);
             case axis::y:
-                return AMAL_NVEC(3)(0, 1, 0);
+                return vec3(0, 1, 0);
             case axis::z:
-                return AMAL_NVEC(3)(0, 0, 1);
+                return vec3(0, 0, 1);
             default:
-                return AMAL_NVEC(3)(0);
+                return vec3(0);
         }
     }
 } // namespace amal

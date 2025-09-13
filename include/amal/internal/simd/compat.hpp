@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../type_info.hpp"
 #include <xmmintrin.h>
 #if defined(__SSE4_1__) || defined(__AVX2__)
     #include <smmintrin.h>
@@ -12,7 +13,7 @@ namespace amal
 {
     namespace internal
     {
-        static inline __v4si mm_mullo_epi32_compat(__v4si a, __v4si b)
+        static inline __v4si_u mm_mullo_epi32_compat(__v4si_u a, __v4si_u b)
         {
 #if defined(__SSE4_1__) || defined(__AVX2__)
             return _mm_mullo_epi32(a, b);
