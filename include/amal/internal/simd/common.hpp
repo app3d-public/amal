@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../type_info.hpp"
+#include "compat.hpp"
 #if defined(__SSE2__)
     #include <xmmintrin.h>
 #endif
@@ -19,10 +20,7 @@ namespace amal
             return reinterpret_cast<__m128_u>(reinterpret_cast<__v4si_u>(x) & abs_mask);
         }
 
-        inline __m128_u fma(__m128_u const &x, __m128_u const &y, __m128_u const &z)
-        {
-            return _mm_add_ps(_mm_mul_ps(x, y), z);
-        }
+        inline __m128_u fma(__m128_u const &x, __m128_u const &y, __m128_u const &z) { return AMAL_FMA_ADD(x, y, z); }
 
         template <int c>
         inline __m128_u splat(__m128_u x)
@@ -149,7 +147,7 @@ namespace amal
 
         inline __m256d_u fma(__m256d_u const &x, __m256d_u const &y, __m256d_u const &z)
         {
-            return _mm256_fmadd_pd(x, y, z);
+            return AMAL_FMA_ADD_PD(x, y, z);
         }
 
         template <int c>

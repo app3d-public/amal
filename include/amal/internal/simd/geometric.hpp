@@ -51,11 +51,18 @@ namespace amal
 
         inline __m128_u dot(__m128_u a, __m128_u b)
         {
-            __m128 m = _mm_mul_ps(a, b);                               // p0 p1 p2 p3
-            __m128 sh = _mm_shuffle_ps(m, m, _MM_SHUFFLE(2, 3, 0, 1)); // p1 p0 p3 p2
-            __m128 s = _mm_add_ps(m, sh);                              // p0+p1, p0+p1, p2+p3, p2+p3
-            sh = _mm_shuffle_ps(s, s, _MM_SHUFFLE(1, 0, 3, 2));        // p2+p3, p2+p3, p0+p1, p0+p1
-            return _mm_add_ss(s, sh);                                  // (p0+p1)+(p2+p3)
+            // here I Remove _mm_dp_ps due to slow performance
+    #if defined(AMAL_ARCH_SSE3)
+            __m128 mul = _mm_mul_ps(a, b);     // [p0 p1 p2 p3]
+            __m128 h1 = _mm_hadd_ps(mul, mul); // [p0+p1, p2+p3, p0+p1, p2+p3]
+            __m128 h2 = _mm_hadd_ps(h1, h1);   // [sum,   sum,   sum,   sum]
+            return h2;
+    #else // SSE2
+            __m128 p = _mm_mul_ps(a, b);                       // [p0 p1 p2 p3]
+            __m128 t = _mm_add_ps(p, _mm_movehl_ps(p, p));     // [p0+p2, p1+p3, *, *]
+            __m128 s = _mm_add_ss(t, _mm_shuffle_ps(t, t, 1)); // [sum, 0, 0, 0]
+            return _mm_shuffle_ps(s, s, 0);                    // [sum sum sum sum]
+    #endif
         }
 #endif
 #if defined(__AVX__)

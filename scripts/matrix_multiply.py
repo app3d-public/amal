@@ -5,36 +5,22 @@ from jinja2 import Template
 
 COMP_NAMES = ["x", "y", "z", "w"]
 
-def gen_pairwise_simd_impl(c1: int, r1: int, c2: int):
+def gen_pairwise_impl(c1: int, r1: int, c2: int):
     lines = []
     lines.append("auto " + ", ".join([f"b{i} = m2[{i}]" for i in range(c2)]) + ";")
     lines.append("")
     lines.append(f"AMAL_NVEC({r1}) " + ", ".join([f"c{i}" for i in range(c2)]) + ";")
-    lines.append(f"AMAL_NVEC({r1}) " + ", ".join([f"a{k}" for k in range(c1)]) + ";")
     lines.append("")
 
-    pair_idx = 0
-    i = 0
-    while i < c2:
-        comp = COMP_NAMES[pair_idx]
-        lines.append(f"// --- columns {i}" + (f",{i+1}" if i+1 < c2 else "") + f" (splat A: {comp}) ---")
-        # a0..aN
-        for k in range(c1):
-            lines.append(f"a{k} = amal::splat_{comp}(m1[{k}]);")
+    for j in range(c2):
+        comp0 = COMP_NAMES[0]
+        lines.append(f"c{j} = m1[0] * amal::splat_{comp0}(b{j});")
+        for i in range(1, c1):
+            comp = COMP_NAMES[i]
+            lines.append(f"c{j} = amal::fma(m1[{i}], amal::splat_{comp}(b{j}), c{j});")
         lines.append("")
-        # init/accumulate
-        lines.append(f"c{i} = a0 * b{i};")
-        for k in range(1, c1):
-            lines.append(f"c{i} = amal::fma(a{k}, b{i}, c{i});")
-        if i + 1 < c2:
-            lines.append(f"c{i+1} = a0 * b{i+1};")
-            for k in range(1, c1):
-                lines.append(f"c{i+1} = amal::fma(a{k}, b{i+1}, c{i+1});")
-        lines.append("")
-        pair_idx += 1
-        i += 2
-        if pair_idx >= r1:
-            pair_idx = r1 - 1
+
+    # записываем в out
     lines.append(" ".join([f"out[{i}] = c{i};" for i in range(c2)]))
     return lines
 
@@ -50,7 +36,7 @@ def main():
             for c2 in range(2, 5):
                 if r1 != c2:
                     continue
-                impl = gen_pairwise_simd_impl(c1, r1, c2)
+                impl = gen_pairwise_impl(c1, r1, c2)
                 print(template.render(
                     C1=c1, R1=r1, C2=c2, R2=c1,
                     type=f"AMAL_NVEC({r1})",

@@ -9,30 +9,6 @@ namespace amal
     namespace internal
     {
 #ifdef __SSE2__
-        template <int C1, int R1, int C2, int R2, typename T>
-        inline void multiply_matrix(T const (&m1)[C1], T const (&m2)[C2], T (&out)[C2]);
-
-        template <length_t C>
-        inline __m128_u multiply_matrix(__m128_u const (&m)[C], __m128_u const &v)
-        {
-            __m128_u result;
-    #if defined(AMAL_FMA_ENABLE)
-            result = _mm_mul_ps(m[0], _mm_shuffle_ps(v, v, _MM_SHUFFLE(0, 0, 0, 0)));
-            result = _mm_fmadd_ps(m[1], _mm_shuffle_ps(v, v, _MM_SHUFFLE(1, 1, 1, 1)), result);
-            if constexpr (C > 2) result = _mm_fmadd_ps(m[2], _mm_shuffle_ps(v, v, _MM_SHUFFLE(2, 2, 2, 2)), result);
-            if constexpr (C > 3) result = _mm_fmadd_ps(m[3], _mm_shuffle_ps(v, v, _MM_SHUFFLE(3, 3, 3, 3)), result);
-    #else
-            result = _mm_setzero_ps();
-            result = _mm_add_ps(result, _mm_mul_ps(m[0], _mm_shuffle_ps(v, v, _MM_SHUFFLE(0, 0, 0, 0))));
-            result = _mm_add_ps(result, _mm_mul_ps(m[1], _mm_shuffle_ps(v, v, _MM_SHUFFLE(1, 1, 1, 1))));
-            if constexpr (C > 2)
-                result = _mm_add_ps(result, _mm_mul_ps(m[2], _mm_shuffle_ps(v, v, _MM_SHUFFLE(2, 2, 2, 2))));
-            if constexpr (C > 3)
-                result = _mm_add_ps(result, _mm_mul_ps(m[3], _mm_shuffle_ps(v, v, _MM_SHUFFLE(3, 3, 3, 3))));
-    #endif
-            return result;
-        }
-
         template <length_t N, length_t M>
         void transpose(__m128_u const (&in)[N], __m128_u (&out)[M]);
 
@@ -144,70 +120,58 @@ namespace amal
             __m128_u a = _mm_shuffle_ps(m[0], m[0], _MM_SHUFFLE(0, 0, 0, 0));
             __m128_u d = _mm_shuffle_ps(m[1], m[1], _MM_SHUFFLE(1, 1, 1, 1));
             __m128_u bc = _mm_mul_ps(_mm_shuffle_ps(m[0], m[0], _MM_SHUFFLE(1, 1, 1, 1)),
-                                   _mm_shuffle_ps(m[1], m[1], _MM_SHUFFLE(0, 0, 0, 0)));
-    #if defined(AMAL_FMA_ENABLE)
-            return _mm_fmsub_ps(a, d, bc);
-    #else
-            __m128_u ad = _mm_mul_ps(a, d);
-            return _mm_sub_ps(ad, bc);
-    #endif
+                                     _mm_shuffle_ps(m[1], m[1], _MM_SHUFFLE(0, 0, 0, 0)));
+            return AMAL_FMA_SUB(a, d, bc);
         }
 
         inline __m128_u determinant(__m128_u const (&m)[3])
         {
-            // m[0] = [a, b, c, _]
-            // m[1] = [d, e, f, _]
-            // m[2] = [g, h, i, _]
+            const __m128 a = _mm_shuffle_ps(m[0], m[0], _MM_SHUFFLE(0, 0, 0, 0)); // a
+            const __m128 b = _mm_shuffle_ps(m[0], m[0], _MM_SHUFFLE(0, 0, 1, 1)); // b
+            const __m128 c = _mm_shuffle_ps(m[0], m[0], _MM_SHUFFLE(0, 0, 2, 2)); // c
 
-            // ei - fh
-            __m128_u ei_fh = _mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(m[1], m[1], _MM_SHUFFLE(0, 0, 2, 2)),  // [f, f, f, f]
-                                                 _mm_shuffle_ps(m[2], m[2], _MM_SHUFFLE(0, 0, 1, 1))), // [h, h, h, h]
-                                      _mm_mul_ps(_mm_shuffle_ps(m[1], m[1], _MM_SHUFFLE(0, 0, 1, 1)),  // [e, e, e, e]
-                                                 _mm_shuffle_ps(m[2], m[2], _MM_SHUFFLE(0, 0, 2, 2)))  // [i, i, i, i]
-            ); // [ei - fh, ei - fh, ei - fh, ei - fh]
+            const __m128 d = _mm_shuffle_ps(m[1], m[1], _MM_SHUFFLE(0, 0, 0, 0)); // d
+            const __m128 e = _mm_shuffle_ps(m[1], m[1], _MM_SHUFFLE(0, 0, 1, 1)); // e
+            const __m128 f = _mm_shuffle_ps(m[1], m[1], _MM_SHUFFLE(0, 0, 2, 2)); // f
 
-            __m128_u a = _mm_shuffle_ps(m[0], m[0], _MM_SHUFFLE(0, 0, 0, 0)); // [a, a, a, a]
-            __m128_u term0 = _mm_mul_ps(a, ei_fh);
+            const __m128 g = _mm_shuffle_ps(m[2], m[2], _MM_SHUFFLE(0, 0, 0, 0)); // g
+            const __m128 h = _mm_shuffle_ps(m[2], m[2], _MM_SHUFFLE(0, 0, 1, 1)); // h
+            const __m128 i = _mm_shuffle_ps(m[2], m[2], _MM_SHUFFLE(0, 0, 2, 2)); // i
 
-            // di - fg
-            __m128_u di_fg = _mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(m[1], m[1], _MM_SHUFFLE(0, 0, 0, 0)),  // [d, d, d, d]
-                                                 _mm_shuffle_ps(m[2], m[2], _MM_SHUFFLE(0, 0, 2, 2))), // [i, i, i, i]
-                                      _mm_mul_ps(_mm_shuffle_ps(m[1], m[1], _MM_SHUFFLE(0, 0, 2, 2)),  // [f, f, f, f]
-                                                 _mm_shuffle_ps(m[2], m[2], _MM_SHUFFLE(0, 0, 0, 0)))  // [g, g, g, g]
-            );
-            __m128_u b = _mm_shuffle_ps(m[0], m[0], _MM_SHUFFLE(0, 0, 1, 1));
-            __m128_u term1 = _mm_mul_ps(b, di_fg);
+            const __m128 ei_fh = AMAL_FMA_SUB(e, i, _mm_mul_ps(f, h));
+            const __m128 di_fg = AMAL_FMA_SUB(d, i, _mm_mul_ps(f, g));
+            const __m128 dh_eg = AMAL_FMA_SUB(d, h, _mm_mul_ps(e, g));
 
-            // dh - eg
-            __m128_u dh_eg = _mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(m[1], m[1], _MM_SHUFFLE(0, 0, 0, 0)),  // [d, d, d, d]
-                                                 _mm_shuffle_ps(m[2], m[2], _MM_SHUFFLE(0, 0, 1, 1))), // [h, h, h, h]
-                                      _mm_mul_ps(_mm_shuffle_ps(m[1], m[1], _MM_SHUFFLE(0, 0, 1, 1)),  // [e, e, e, e]
-                                                 _mm_shuffle_ps(m[2], m[2], _MM_SHUFFLE(0, 0, 0, 0)))  // [g, g, g, g]
-            );
-            __m128_u c = _mm_shuffle_ps(m[0], m[0], _MM_SHUFFLE(0, 0, 2, 2));
-            __m128_u term2 = _mm_mul_ps(c, dh_eg);
+            const __m128 term0 = _mm_mul_ps(a, ei_fh);
+            const __m128 term1 = _mm_mul_ps(b, di_fg);
+            const __m128 term2 = _mm_mul_ps(c, dh_eg);
 
             return _mm_sub_ps(_mm_add_ps(term0, term2), term1);
         }
 
         inline __m128_u determinant(__m128_u const (&m)[4])
         {
-            __m128_u s0 = _mm_mul_ps(_mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(m[2], m[2], _MM_SHUFFLE(0, 1, 1, 2)),
-                                                         _mm_shuffle_ps(m[3], m[3], _MM_SHUFFLE(3, 2, 3, 3))),
-                                              _mm_mul_ps(_mm_shuffle_ps(m[2], m[2], _MM_SHUFFLE(3, 2, 3, 3)),
-                                                         _mm_shuffle_ps(m[3], m[3], _MM_SHUFFLE(0, 1, 1, 2)))),
-                                   _mm_shuffle_ps(m[1], m[1], _MM_SHUFFLE(0, 0, 0, 1)));
+            const __m128 m2_a = _mm_shuffle_ps(m[2], m[2], _MM_SHUFFLE(0, 1, 1, 2));
+            const __m128 m3_a = _mm_shuffle_ps(m[3], m[3], _MM_SHUFFLE(3, 2, 3, 3));
+            const __m128 m2_b = _mm_shuffle_ps(m[2], m[2], _MM_SHUFFLE(3, 2, 3, 3));
+            const __m128 m3_b = _mm_shuffle_ps(m[3], m[3], _MM_SHUFFLE(0, 1, 1, 2));
+            const __m128 w0 = _mm_shuffle_ps(m[1], m[1], _MM_SHUFFLE(0, 0, 0, 1));
 
-            __m128_u s1 =
-                _mm_mul_ps(_mm_sub_ps(_mm_mul_ps(_mm_shuffle_ps(m[2], m[2], _MM_SHUFFLE(0, 0, 1, 2)),
-                                                 _mm_shuffle_ps(m[3], m[3], _MM_SHUFFLE(1, 2, 0, 0))),
-                                      _mm_movehl_ps(_mm_setzero_ps(),
-                                                    _mm_mul_ps(_mm_shuffle_ps(m[2], m[2], _MM_SHUFFLE(0, 0, 1, 2)),
-                                                               _mm_shuffle_ps(m[3], m[3], _MM_SHUFFLE(1, 2, 0, 0))))),
-                           _mm_shuffle_ps(m[1], m[1], _MM_SHUFFLE(2, 3, 3, 3)));
+            const __m128 s0_inner = AMAL_FMA_SUB(m2_a, m3_a, _mm_mul_ps(m2_b, m3_b));
+            const __m128 s0 = _mm_mul_ps(s0_inner, w0);
 
-            __m128_u det = _mm_add_ps(s0, s1);
-            det = _mm_mul_ps(det, _mm_setr_ps(1.f, -1.f, 1.f, -1.f));
+            const __m128 m2_c = _mm_shuffle_ps(m[2], m[2], _MM_SHUFFLE(0, 0, 1, 2));
+            const __m128 m3_c = _mm_shuffle_ps(m[3], m[3], _MM_SHUFFLE(1, 2, 0, 0));
+            const __m128 prod = _mm_mul_ps(m2_c, m3_c);
+            const __m128 high = _mm_movehl_ps(_mm_setzero_ps(), prod);
+            const __m128 w1 = _mm_shuffle_ps(m[1], m[1], _MM_SHUFFLE(2, 3, 3, 3));
+
+            const __m128 s1_inner = AMAL_FMA_SUB(m2_c, m3_c, high);
+            const __m128 s1 = _mm_mul_ps(s1_inner, w1);
+
+            __m128 det = _mm_add_ps(s0, s1);
+            const __m128 sign_mask = _mm_set_ps(-0.0f, +0.0f, -0.0f, +0.0f);
+            det = _mm_xor_ps(det, sign_mask);
             return _mm_mul_ps(det, m[0]);
         }
 
@@ -220,139 +184,143 @@ namespace amal
 
         inline void inverse_matrix(__m128_u const (&m)[3], __m128_u (&out)[3])
         {
-            const __m128_u a = m[0];
-            const __m128_u b = m[1];
-            const __m128_u c = m[2];
+            // column-major: a=m[0], b=m[1], c=m[2]
+            __m128 a = (__m128)m[0];
+            __m128 b = (__m128)m[1];
+            __m128 c = (__m128)m[2];
 
-            const __m128_u i0 = cross_yzx(b, c);
-            const __m128_u i1 = cross_yzx(c, a);
-            const __m128_u i2 = cross_yzx(a, b);
+            __m128 i0 = (__m128)cross_yzx((__m128_u)b, (__m128_u)c); // cross(b,c)
+            __m128 i1 = (__m128)cross_yzx((__m128_u)c, (__m128_u)a); // cross(c,a)
+            __m128 i2 = (__m128)cross_yzx((__m128_u)a, (__m128_u)b); // cross(a,b)
 
-            out[0] = _mm_setr_ps(i0[0], i1[0], i2[0], 0.f);
-            out[1] = _mm_setr_ps(i0[1], i1[1], i2[1], 0.f);
-            out[2] = _mm_setr_ps(i0[2], i1[2], i2[2], 0.f);
+            __m128 det = dot((__m128_u)a, (__m128_u)i0);
+            det = _mm_shuffle_ps(det, det, 0);
 
-            const __m128_u rdet = _mm_rcp_ps(dot(a, cross_yzx(b, c)));
+            __m128 rcp = _mm_rcp_ps(det);
 
-            out[0] = _mm_mul_ps(out[0], rdet);
-            out[1] = _mm_mul_ps(out[1], rdet);
-            out[2] = _mm_mul_ps(out[2], rdet);
+            i0 = _mm_mul_ps(i0, rcp);
+            i1 = _mm_mul_ps(i1, rcp);
+            i2 = _mm_mul_ps(i2, rcp);
+
+            i0 = _mm_move_ss(i0, _mm_setzero_ps());
+            i1 = _mm_move_ss(i1, _mm_setzero_ps());
+            i2 = _mm_move_ss(i2, _mm_setzero_ps());
+
+            out[0] = (__m128_u)i0;
+            out[1] = (__m128_u)i1;
+            out[2] = (__m128_u)i2;
         }
 
-        inline void inverse_matrix(__m128_u const (&m)[4], __m128_u (&out)[4])
+        inline void inverse_matrix(__m128_u const (&m)[4], __m128_u (&out)[4]) noexcept
         {
-            __m128 v3 = m[3], v2 = m[2], v1 = m[1];
+            __m128 c0 = (__m128)m[0];
+            __m128 c1 = (__m128)m[1];
+            __m128 c2 = (__m128)m[2];
+            __m128 c3 = (__m128)m[3];
 
-            __m128 A3_3 = _mm_shuffle_ps(v3, v2, _MM_SHUFFLE(3, 3, 3, 3));
-            __m128 A2_2 = _mm_shuffle_ps(v3, v2, _MM_SHUFFLE(2, 2, 2, 2));
-            __m128 A1_1 = _mm_shuffle_ps(v3, v2, _MM_SHUFFLE(1, 1, 1, 1));
-            __m128 A0_0 = _mm_shuffle_ps(v3, v2, _MM_SHUFFLE(0, 0, 0, 0));
-
-            __m128 B3_3 = _mm_shuffle_ps(v2, v1, _MM_SHUFFLE(3, 3, 3, 3));
-            __m128 B2_2 = _mm_shuffle_ps(v2, v1, _MM_SHUFFLE(2, 2, 2, 2));
-            __m128 B1_1 = _mm_shuffle_ps(v2, v1, _MM_SHUFFLE(1, 1, 1, 1));
-            __m128 B0_0 = _mm_shuffle_ps(v2, v1, _MM_SHUFFLE(0, 0, 0, 0));
-
-            __m128 Fac0, Fac1, Fac2, Fac3, Fac4, Fac5;
+            __m128 fac0;
             {
-                __m128 a = _mm_shuffle_ps(A3_3, A3_3, _MM_SHUFFLE(2, 0, 0, 0));
-                __m128 b = _mm_shuffle_ps(A2_2, A2_2, _MM_SHUFFLE(2, 0, 0, 0));
-    #ifdef AMAL_FMA_ENABLE
-                Fac0 = _mm_fmsub_ps(B2_2, a, _mm_mul_ps(b, B3_3));
-    #else
-                Fac0 = _mm_sub_ps(_mm_mul_ps(B2_2, a), _mm_mul_ps(b, B3_3));
-    #endif
+                __m128 swp0a = _mm_shuffle_ps(c3, c2, _MM_SHUFFLE(3, 3, 3, 3));
+                __m128 swp0b = _mm_shuffle_ps(c3, c2, _MM_SHUFFLE(2, 2, 2, 2));
+                __m128 swp00 = _mm_shuffle_ps(c2, c1, _MM_SHUFFLE(2, 2, 2, 2));
+                __m128 swp01 = _mm_shuffle_ps(swp0a, swp0a, _MM_SHUFFLE(2, 0, 0, 0));
+                __m128 swp02 = _mm_shuffle_ps(swp0b, swp0b, _MM_SHUFFLE(2, 0, 0, 0));
+                __m128 swp03 = _mm_shuffle_ps(c2, c1, _MM_SHUFFLE(3, 3, 3, 3));
+                fac0 = AMAL_FMA_SUB(swp00, swp01, _mm_mul_ps(swp02, swp03));
             }
+            __m128 fac1;
             {
-                __m128 a = _mm_shuffle_ps(A3_3, A3_3, _MM_SHUFFLE(2, 0, 0, 0));
-                __m128 b = _mm_shuffle_ps(A1_1, A1_1, _MM_SHUFFLE(2, 0, 0, 0));
-    #ifdef AMAL_FMA_ENABLE
-                Fac1 = _mm_fmsub_ps(B1_1, a, _mm_mul_ps(b, B3_3));
-    #else
-                Fac1 = _mm_sub_ps(_mm_mul_ps(B1_1, a), _mm_mul_ps(b, B3_3));
-    #endif
+                __m128 swp0a = _mm_shuffle_ps(c3, c2, _MM_SHUFFLE(3, 3, 3, 3));
+                __m128 swp0b = _mm_shuffle_ps(c3, c2, _MM_SHUFFLE(1, 1, 1, 1));
+                __m128 swp00 = _mm_shuffle_ps(c2, c1, _MM_SHUFFLE(1, 1, 1, 1));
+                __m128 swp01 = _mm_shuffle_ps(swp0a, swp0a, _MM_SHUFFLE(2, 0, 0, 0));
+                __m128 swp02 = _mm_shuffle_ps(swp0b, swp0b, _MM_SHUFFLE(2, 0, 0, 0));
+                __m128 swp03 = _mm_shuffle_ps(c2, c1, _MM_SHUFFLE(3, 3, 3, 3));
+                fac1 = AMAL_FMA_SUB(swp00, swp01, _mm_mul_ps(swp02, swp03));
             }
-            // Fac2 = B1_1*swp(A2_2) - B2_2*swp(A1_1)
+            __m128 fac2;
             {
-                __m128 a = _mm_shuffle_ps(A2_2, A2_2, _MM_SHUFFLE(2, 0, 0, 0));
-                __m128 b = _mm_shuffle_ps(A1_1, A1_1, _MM_SHUFFLE(2, 0, 0, 0));
-    #ifdef AMAL_FMA_ENABLE
-                Fac2 = _mm_fmsub_ps(B1_1, a, _mm_mul_ps(b, B2_2));
-    #else
-                Fac2 = _mm_sub_ps(_mm_mul_ps(B1_1, a), _mm_mul_ps(b, B2_2));
-    #endif
+                __m128 swp0a = _mm_shuffle_ps(c3, c2, _MM_SHUFFLE(2, 2, 2, 2));
+                __m128 swp0b = _mm_shuffle_ps(c3, c2, _MM_SHUFFLE(1, 1, 1, 1));
+                __m128 swp00 = _mm_shuffle_ps(c2, c1, _MM_SHUFFLE(1, 1, 1, 1));
+                __m128 swp01 = _mm_shuffle_ps(swp0a, swp0a, _MM_SHUFFLE(2, 0, 0, 0));
+                __m128 swp02 = _mm_shuffle_ps(swp0b, swp0b, _MM_SHUFFLE(2, 0, 0, 0));
+                __m128 swp03 = _mm_shuffle_ps(c2, c1, _MM_SHUFFLE(2, 2, 2, 2));
+                fac2 = AMAL_FMA_SUB(swp00, swp01, _mm_mul_ps(swp02, swp03));
             }
-            // Fac3 = B0_0*swp(A3_3) - B3_3*swp(A0_0)
+            __m128 fac3;
             {
-                __m128 a = _mm_shuffle_ps(A3_3, A3_3, _MM_SHUFFLE(2, 0, 0, 0));
-                __m128 b = _mm_shuffle_ps(A0_0, A0_0, _MM_SHUFFLE(2, 0, 0, 0));
-    #ifdef AMAL_FMA_ENABLE
-                Fac3 = _mm_fmsub_ps(B0_0, a, _mm_mul_ps(b, B3_3));
-    #else
-                Fac3 = _mm_sub_ps(_mm_mul_ps(B0_0, a), _mm_mul_ps(b, B3_3));
-    #endif
+                __m128 swp0a = _mm_shuffle_ps(c3, c2, _MM_SHUFFLE(3, 3, 3, 3));
+                __m128 swp0b = _mm_shuffle_ps(c3, c2, _MM_SHUFFLE(0, 0, 0, 0));
+                __m128 swp00 = _mm_shuffle_ps(c2, c1, _MM_SHUFFLE(0, 0, 0, 0));
+                __m128 swp01 = _mm_shuffle_ps(swp0a, swp0a, _MM_SHUFFLE(2, 0, 0, 0));
+                __m128 swp02 = _mm_shuffle_ps(swp0b, swp0b, _MM_SHUFFLE(2, 0, 0, 0));
+                __m128 swp03 = _mm_shuffle_ps(c2, c1, _MM_SHUFFLE(3, 3, 3, 3));
+                fac3 = AMAL_FMA_SUB(swp00, swp01, _mm_mul_ps(swp02, swp03));
             }
-            // Fac4 = B0_0*swp(A2_2) - B2_2*swp(A0_0)
+            __m128 fac4;
             {
-                __m128 a = _mm_shuffle_ps(A2_2, A2_2, _MM_SHUFFLE(2, 0, 0, 0));
-                __m128 b = _mm_shuffle_ps(A0_0, A0_0, _MM_SHUFFLE(2, 0, 0, 0));
-    #ifdef AMAL_FMA_ENABLE
-                Fac4 = _mm_fmsub_ps(B0_0, a, _mm_mul_ps(b, B2_2));
-    #else
-                Fac4 = _mm_sub_ps(_mm_mul_ps(B0_0, a), _mm_mul_ps(b, B2_2));
-    #endif
+                __m128 swp0a = _mm_shuffle_ps(c3, c2, _MM_SHUFFLE(2, 2, 2, 2));
+                __m128 swp0b = _mm_shuffle_ps(c3, c2, _MM_SHUFFLE(0, 0, 0, 0));
+                __m128 swp00 = _mm_shuffle_ps(c2, c1, _MM_SHUFFLE(0, 0, 0, 0));
+                __m128 swp01 = _mm_shuffle_ps(swp0a, swp0a, _MM_SHUFFLE(2, 0, 0, 0));
+                __m128 swp02 = _mm_shuffle_ps(swp0b, swp0b, _MM_SHUFFLE(2, 0, 0, 0));
+                __m128 swp03 = _mm_shuffle_ps(c2, c1, _MM_SHUFFLE(2, 2, 2, 2));
+                fac4 = AMAL_FMA_SUB(swp00, swp01, _mm_mul_ps(swp02, swp03));
             }
-            // Fac5 = B0_0*swp(A1_1) - B1_1*swp(A0_0)
+            __m128 fac5;
             {
-                __m128 a = _mm_shuffle_ps(A1_1, A1_1, _MM_SHUFFLE(2, 0, 0, 0));
-                __m128 b = _mm_shuffle_ps(A0_0, A0_0, _MM_SHUFFLE(2, 0, 0, 0));
-    #ifdef AMAL_FMA_ENABLE
-                Fac5 = _mm_fmsub_ps(B0_0, a, _mm_mul_ps(b, B1_1));
-    #else
-                Fac5 = _mm_sub_ps(_mm_mul_ps(B0_0, a), _mm_mul_ps(b, B1_1));
-    #endif
+                __m128 swp0a = _mm_shuffle_ps(c3, c2, _MM_SHUFFLE(1, 1, 1, 1));
+                __m128 swp0b = _mm_shuffle_ps(c3, c2, _MM_SHUFFLE(0, 0, 0, 0));
+                __m128 swp00 = _mm_shuffle_ps(c2, c1, _MM_SHUFFLE(0, 0, 0, 0));
+                __m128 swp01 = _mm_shuffle_ps(swp0a, swp0a, _MM_SHUFFLE(2, 0, 0, 0));
+                __m128 swp02 = _mm_shuffle_ps(swp0b, swp0b, _MM_SHUFFLE(2, 0, 0, 0));
+                __m128 swp03 = _mm_shuffle_ps(c2, c1, _MM_SHUFFLE(1, 1, 1, 1));
+                fac5 = AMAL_FMA_SUB(swp00, swp01, _mm_mul_ps(swp02, swp03));
             }
 
-            const __m128 sign_a = _mm_set_ps(1.f, -1.f, 1.f, -1.f);
-            const __m128 sign_b = _mm_set_ps(-1.f, 1.f, -1.f, 1.f);
+            __m128 tmp0 = _mm_shuffle_ps(c1, c0, _MM_SHUFFLE(0, 0, 0, 0));
+            __m128 v0 = _mm_shuffle_ps(tmp0, tmp0, _MM_SHUFFLE(2, 2, 2, 0));
 
-            __m128 T0 = _mm_shuffle_ps(m[1], m[0], _MM_SHUFFLE(0, 0, 0, 0));
-            __m128 T1 = _mm_shuffle_ps(m[1], m[0], _MM_SHUFFLE(1, 1, 1, 1));
-            __m128 T2 = _mm_shuffle_ps(m[1], m[0], _MM_SHUFFLE(2, 2, 2, 2));
-            __m128 T3 = _mm_shuffle_ps(m[1], m[0], _MM_SHUFFLE(3, 3, 3, 3));
+            __m128 tmp1 = _mm_shuffle_ps(c1, c0, _MM_SHUFFLE(1, 1, 1, 1));
+            __m128 v1 = _mm_shuffle_ps(tmp1, tmp1, _MM_SHUFFLE(2, 2, 2, 0));
 
-            __m128 V0 = _mm_shuffle_ps(T0, T0, _MM_SHUFFLE(2, 2, 2, 0));
-            __m128 V1 = _mm_shuffle_ps(T1, T1, _MM_SHUFFLE(2, 2, 2, 0));
-            __m128 V2 = _mm_shuffle_ps(T2, T2, _MM_SHUFFLE(2, 2, 2, 0));
-            __m128 V3 = _mm_shuffle_ps(T3, T3, _MM_SHUFFLE(2, 2, 2, 0));
+            __m128 tmp2 = _mm_shuffle_ps(c1, c0, _MM_SHUFFLE(2, 2, 2, 2));
+            __m128 v2 = _mm_shuffle_ps(tmp2, tmp2, _MM_SHUFFLE(2, 2, 2, 0));
 
-            __m128 inv0 = _mm_mul_ps(
-                sign_b, _mm_add_ps(_mm_sub_ps(_mm_mul_ps(V1, Fac0), _mm_mul_ps(V2, Fac1)), _mm_mul_ps(V3, Fac2)));
-            __m128 inv1 = _mm_mul_ps(
-                sign_a, _mm_add_ps(_mm_sub_ps(_mm_mul_ps(V0, Fac0), _mm_mul_ps(V2, Fac3)), _mm_mul_ps(V3, Fac4)));
-            __m128 inv2 = _mm_mul_ps(
-                sign_b, _mm_add_ps(_mm_sub_ps(_mm_mul_ps(V0, Fac1), _mm_mul_ps(V1, Fac3)), _mm_mul_ps(V3, Fac5)));
-            __m128 inv3 = _mm_mul_ps(
-                sign_a, _mm_add_ps(_mm_sub_ps(_mm_mul_ps(V0, Fac2), _mm_mul_ps(V1, Fac4)), _mm_mul_ps(V2, Fac5)));
+            __m128 tmp3 = _mm_shuffle_ps(c1, c0, _MM_SHUFFLE(3, 3, 3, 3));
+            __m128 v3 = _mm_shuffle_ps(tmp3, tmp3, _MM_SHUFFLE(2, 2, 2, 0));
 
-            __m128 row0 = _mm_shuffle_ps(inv0, inv1, _MM_SHUFFLE(0, 0, 0, 0));
-            __m128 row1 = _mm_shuffle_ps(inv2, inv3, _MM_SHUFFLE(0, 0, 0, 0));
-            __m128 row2 = _mm_shuffle_ps(row0, row1, _MM_SHUFFLE(2, 0, 2, 0));
+            static const __m128 mask_b = _mm_set_ps(+0.0f, -0.0f, +0.0f, -0.0f); // [-,+,-,+] по [x,y,z,w]
+            static const __m128 mask_a = _mm_set_ps(-0.0f, +0.0f, -0.0f, +0.0f); // [+,-,+,-]
 
-            __m128 det = dot(m[0], row2);
-            __m128 rdet = _mm_div_ps(_mm_set1_ps(1.f), det);
+            __m128 ta = AMAL_FMA_SUB(v1, fac0, _mm_mul_ps(v2, fac1));
+            __m128 col0 = AMAL_FMA_ADD(v3, fac2, ta);
+            __m128 inv0 = _mm_xor_ps(col0, mask_b);
 
-            out[0] = _mm_mul_ps(inv0, rdet);
-            out[1] = _mm_mul_ps(inv1, rdet);
-            out[2] = _mm_mul_ps(inv2, rdet);
-            out[3] = _mm_mul_ps(inv3, rdet);
+            __m128 tb = AMAL_FMA_SUB(v0, fac0, _mm_mul_ps(v2, fac3));
+            __m128 col1 = AMAL_FMA_ADD(v3, fac4, tb);
+            __m128 inv1 = _mm_xor_ps(col1, mask_a);
+
+            __m128 tc = AMAL_FMA_SUB(v0, fac1, _mm_mul_ps(v1, fac3));
+            __m128 col2 = AMAL_FMA_ADD(v3, fac5, tc);
+            __m128 inv2 = _mm_xor_ps(col2, mask_b);
+
+            __m128 tD = AMAL_FMA_SUB(v0, fac2, _mm_mul_ps(v1, fac4));
+            __m128 col3 = AMAL_FMA_ADD(v2, fac5, tD);
+            __m128 inv3 = _mm_xor_ps(col3, mask_a);
+
+            __m128 r0 = _mm_shuffle_ps(inv0, inv1, _MM_SHUFFLE(0, 0, 0, 0));
+            __m128 r1 = _mm_shuffle_ps(inv2, inv3, _MM_SHUFFLE(0, 0, 0, 0));
+            __m128 r2 = _mm_shuffle_ps(r0, r1, _MM_SHUFFLE(2, 0, 2, 0));
+
+            __m128 rcp = _mm_rcp_ps(dot(c0, r2));
+
+            out[0] = (__m128_u)_mm_mul_ps(inv0, rcp);
+            out[1] = (__m128_u)_mm_mul_ps(inv1, rcp);
+            out[2] = (__m128_u)_mm_mul_ps(inv2, rcp);
+            out[3] = (__m128_u)_mm_mul_ps(inv3, rcp);
         }
-
-    #if defined(AMAL_FMA_ENABLE)
-        #define AMAL_FMA_ADD(a, b, c) _mm_fmadd_ps((a), (b), (c))
-    #else
-        #define AMAL_FMA_ADD(a, b, c) _mm_add_ps(_mm_mul_ps((a), (b)), (c))
-    #endif
 
         inline void rotate(__m128_u const (&m)[4], float angle, __m128_u const &axis4, __m128_u (&out)[4])
         {
@@ -427,36 +395,59 @@ namespace amal
             out[3] = in[3];
         }
 
-        inline void shear(__m128_u const (&in)[4], __m128_u const &point, __m128_u const &lxy_lxz, __m128_u const &lyx_lyz,
-                          __m128_u const &lzx_lzy, __m128_u (&out)[4])
+        inline void shear(__m128_u const (&in)[4], __m128_u const &point, __m128_u const &lxy_lxz,
+                          __m128_u const &lyx_lyz, __m128_u const &lzx_lzy, __m128_u (&out)[4])
         {
-            float lambda_xy = lxy_lxz[0], lambda_xz = lxy_lxz[1];
-            float lambda_yx = lyx_lyz[0], lambda_yz = lyx_lyz[1];
-            float lambda_zx = lzx_lzy[0], lambda_zy = lzx_lzy[1];
+            const float l_xy = lxy_lxz[0], l_xz = lxy_lxz[1];
+            const float l_yx = lyx_lyz[0], l_yz = lyx_lyz[1];
+            const float l_zx = lzx_lzy[0], l_zy = lzx_lzy[1];
 
-            float px = point[0], py = point[1], pz = point[2];
+            const float px = point[0], py = point[1], pz = point[2];
 
-            __m128_u col0 = _mm_set_ps(0.0f, lambda_xz, lambda_xy, 1.0f);
-            __m128_u col1 = _mm_set_ps(0.0f, lambda_yz, 1.0f, lambda_yx);
-            __m128_u col2 = _mm_set_ps(0.0f, 1.0f, lambda_zy, lambda_zx);
-            __m128_u col3 = _mm_set_ps(1.0f, -pz * (lambda_zx + lambda_zy), -py * (lambda_yx + lambda_yz),
-                                     -px * (lambda_xy + lambda_xz));
+            // четвертый столбец (трансляция) заранее:
+            const float t_x = -px * (l_xy + l_xz);
+            const float t_y = -py * (l_yx + l_yz);
+            const float t_z = -pz * (l_zx + l_zy);
 
-            out[0] = _mm_add_ps(
-                _mm_add_ps(_mm_mul_ps(in[0], _mm_set1_ps(col0[0])), _mm_mul_ps(in[1], _mm_set1_ps(col1[0]))),
-                _mm_add_ps(_mm_mul_ps(in[2], _mm_set1_ps(col2[0])), _mm_mul_ps(in[3], _mm_set1_ps(col3[0]))));
+            // broadcasts, переиспользуются
+            const __m128 s_yx = _mm_set1_ps(l_yx);
+            const __m128 s_zy = _mm_set1_ps(l_zy);
+            const __m128 s_zx = _mm_set1_ps(l_zx);
+            const __m128 s_xy = _mm_set1_ps(l_xy);
+            const __m128 s_xz = _mm_set1_ps(l_xz);
+            const __m128 s_yz = _mm_set1_ps(l_yz);
 
-            out[1] = _mm_add_ps(
-                _mm_add_ps(_mm_mul_ps(in[0], _mm_set1_ps(col0[1])), _mm_mul_ps(in[1], _mm_set1_ps(col1[1]))),
-                _mm_add_ps(_mm_mul_ps(in[2], _mm_set1_ps(col2[1])), _mm_mul_ps(in[3], _mm_set1_ps(col3[1]))));
+            const __m128 s_tx = _mm_set1_ps(t_x);
+            const __m128 s_ty = _mm_set1_ps(t_y);
+            const __m128 s_tz = _mm_set1_ps(t_z);
 
-            out[2] = _mm_add_ps(
-                _mm_add_ps(_mm_mul_ps(in[0], _mm_set1_ps(col0[2])), _mm_mul_ps(in[1], _mm_set1_ps(col1[2]))),
-                _mm_add_ps(_mm_mul_ps(in[2], _mm_set1_ps(col2[2])), _mm_mul_ps(in[3], _mm_set1_ps(col3[2]))));
+            // читаем входные столбцы один раз
+            const __m128 c0 = (__m128)in[0];
+            const __m128 c1 = (__m128)in[1];
+            const __m128 c2 = (__m128)in[2];
+            const __m128 c3 = (__m128)in[3];
 
-            out[3] = _mm_add_ps(
-                _mm_add_ps(_mm_mul_ps(in[0], _mm_set1_ps(col0[3])), _mm_mul_ps(in[1], _mm_set1_ps(col1[3]))),
-                _mm_add_ps(_mm_mul_ps(in[2], _mm_set1_ps(col2[3])), _mm_mul_ps(in[3], _mm_set1_ps(col3[3]))));
+            // out[0] = in0*1 + in1*l_yx + in2*l_zx + in3*0
+            __m128 acc0 = c0; // *1
+            acc0 = AMAL_FMA_ADD(c1, s_yx, acc0);
+            acc0 = AMAL_FMA_ADD(c2, s_zx, acc0);
+            out[0] = (__m128_u)acc0;
+
+            // out[1] = in0*l_xy + in1*1 + in2*l_zy + in3*0
+            __m128 acc1 = AMAL_FMA_ADD(c0, s_xy, c1); // c1 *1 + c0*l_xy
+            acc1 = AMAL_FMA_ADD(c2, s_zy, acc1);
+            out[1] = (__m128_u)acc1;
+
+            // out[2] = in0*l_xz + in1*l_yz + in2*1 + in3*0
+            __m128 acc2 = AMAL_FMA_ADD(c0, s_xz, c2); // c2 *1 + c0*l_xz
+            acc2 = AMAL_FMA_ADD(c1, s_yz, acc2);
+            out[2] = (__m128_u)acc2;
+
+            // out[3] = in0*t_x + in1*t_y + in2*t_z + in3*1
+            __m128 acc3 = AMAL_FMA_ADD(c0, s_tx, c3); // c3 *1 + c0*t_x
+            acc3 = AMAL_FMA_ADD(c1, s_ty, acc3);
+            acc3 = AMAL_FMA_ADD(c2, s_tz, acc3);
+            out[3] = (__m128_u)acc3;
         }
 
         template <length_t N, length_t M>
@@ -587,9 +578,9 @@ namespace amal
             __v4si_u c = m[2];
 
             __v4si_u bc = mm_mullo_epi32_compat(_mm_shuffle_epi32(b, _MM_SHUFFLE(1, 2, 0, 1)),
-                                              _mm_shuffle_epi32(c, _MM_SHUFFLE(2, 0, 1, 2)));
+                                                _mm_shuffle_epi32(c, _MM_SHUFFLE(2, 0, 1, 2)));
             __v4si_u cb = mm_mullo_epi32_compat(_mm_shuffle_epi32(b, _MM_SHUFFLE(2, 0, 1, 2)),
-                                              _mm_shuffle_epi32(c, _MM_SHUFFLE(1, 2, 0, 1)));
+                                                _mm_shuffle_epi32(c, _MM_SHUFFLE(1, 2, 0, 1)));
 
             __v4si_u cross = _mm_sub_epi32(bc, cb);
             __v4si_u det = mm_mullo_epi32_compat(a, cross);
@@ -611,7 +602,7 @@ namespace amal
 
             // prod = m2[0,0,1,2] * m3[1,2,0,0]
             __v4si_u prod = mm_mullo_epi32_compat(_mm_shuffle_epi32(m[2], _MM_SHUFFLE(0, 0, 1, 2)),
-                                                _mm_shuffle_epi32(m[3], _MM_SHUFFLE(1, 2, 0, 0)));
+                                                  _mm_shuffle_epi32(m[3], _MM_SHUFFLE(1, 2, 0, 0)));
             __v4si_u upper = _mm_castps_si128(_mm_movehl_ps(_mm_setzero_ps(), _mm_castsi128_ps(prod)));
 
             __v4si_u s1 =
@@ -623,58 +614,7 @@ namespace amal
             return mm_mullo_epi32_compat(det, m[0]);
         }
 
-        template <length_t C>
-        inline __v4si_u multiply_matrix(__v4si_u const (&m)[C], __v4si_u const &v)
-        {
-            __v4si_u result = _mm_setzero_si128();
-            result = _mm_add_epi32(result, mm_mullo_epi32_compat(m[0], _mm_shuffle_epi32(v, _MM_SHUFFLE(0, 0, 0, 0))));
-            result = _mm_add_epi32(result, mm_mullo_epi32_compat(m[1], _mm_shuffle_epi32(v, _MM_SHUFFLE(1, 1, 1, 1))));
-            if constexpr (C > 2)
-                result =
-                    _mm_add_epi32(result, mm_mullo_epi32_compat(m[2], _mm_shuffle_epi32(v, _MM_SHUFFLE(2, 2, 2, 2))));
-            if constexpr (C > 3)
-                result =
-                    _mm_add_epi32(result, mm_mullo_epi32_compat(m[3], _mm_shuffle_epi32(v, _MM_SHUFFLE(3, 3, 3, 3))));
-            return result;
-        }
-
     #ifdef __AVX__
-        template <size_t C>
-        inline __m256d_u multiply_matrix(__m256d_u const (&m)[C], __m256d_u const &v)
-        {
-            __m256d result;
-        #if defined(AMAL_FMA_ENABLE)
-            result = _mm256_mul_pd(reinterpret_cast<const __m256d &>(m[0]),
-                                   _mm256_permute4x64_pd(reinterpret_cast<const __m256d &>(v), 0x00));
-            result = _mm256_fmadd_pd(reinterpret_cast<const __m256d &>(m[1]),
-                                     _mm256_permute4x64_pd(reinterpret_cast<const __m256d &>(v), 0x55), result);
-            if constexpr (C > 2)
-                result = _mm256_fmadd_pd(reinterpret_cast<const __m256d &>(m[2]),
-                                         _mm256_permute4x64_pd(reinterpret_cast<const __m256d &>(v), 0xAA), result);
-            if constexpr (C > 3)
-                result = _mm256_fmadd_pd(reinterpret_cast<const __m256d &>(m[3]),
-                                         _mm256_permute4x64_pd(reinterpret_cast<const __m256d &>(v), 0xFF), result);
-        #else
-            result = _mm256_setzero_pd();
-            result =
-                _mm256_add_pd(result, _mm256_mul_pd(reinterpret_cast<const __m256d &>(m[0]),
-                                                    _mm256_permute4x64_pd(reinterpret_cast<const __m256d &>(v), 0x00)));
-            result =
-                _mm256_add_pd(result, _mm256_mul_pd(reinterpret_cast<const __m256d &>(m[1]),
-                                                    _mm256_permute4x64_pd(reinterpret_cast<const __m256d &>(v), 0x55)));
-            if constexpr (C > 2)
-                result = _mm256_add_pd(
-                    result, _mm256_mul_pd(reinterpret_cast<const __m256d &>(m[2]),
-                                          _mm256_permute4x64_pd(reinterpret_cast<const __m256d &>(v), 0xAA)));
-            if constexpr (C > 3)
-                result = _mm256_add_pd(
-                    result, _mm256_mul_pd(reinterpret_cast<const __m256d &>(m[3]),
-                                          _mm256_permute4x64_pd(reinterpret_cast<const __m256d &>(v), 0xFF)));
-        #endif
-
-            return reinterpret_cast<__m256d_u &>(result);
-        }
-
         template <length_t N, length_t M>
         void transpose(__m256d_u const (&in)[N], __m256d_u (&out)[M]);
 
@@ -819,17 +759,18 @@ namespace amal
             __m256d_u m3b = _mm256_permute4x64_pd(m[3], _MM_SHUFFLE(0, 1, 1, 2));
 
             __m256d_u s0 = _mm256_mul_pd(_mm256_sub_pd(_mm256_mul_pd(m2a, m3a), _mm256_mul_pd(m2b, m3b)),
-                                      _mm256_permute4x64_pd(m[1], _MM_SHUFFLE(0, 0, 0, 1)));
+                                         _mm256_permute4x64_pd(m[1], _MM_SHUFFLE(0, 0, 0, 1)));
 
             // s1 = ((m2[0,0,1,2] * m3[1,2,0,0]) - hi(m2*m3)) * m1[2,3,3,3]
             __m256d_u t1 = _mm256_mul_pd(_mm256_permute4x64_pd(m[2], _MM_SHUFFLE(0, 0, 1, 2)),
-                                      _mm256_permute4x64_pd(m[3], _MM_SHUFFLE(1, 2, 0, 0)));
+                                         _mm256_permute4x64_pd(m[3], _MM_SHUFFLE(1, 2, 0, 0)));
 
             __m128d hi128 = _mm256_extractf128_pd(t1, 1);
-            __m256d_u upper = _mm256_castpd128_pd256(hi128);                  // [hi2, hi3, ?, ?]
+            __m256d_u upper = _mm256_castpd128_pd256(hi128);               // [hi2, hi3, ?, ?]
             upper = _mm256_permute4x64_pd(upper, _MM_SHUFFLE(1, 1, 1, 1)); // [hi3, hi3, hi3, hi3]
 
-            __m256d_u s1 = _mm256_mul_pd(_mm256_sub_pd(t1, upper), _mm256_permute4x64_pd(m[1], _MM_SHUFFLE(2, 3, 3, 3)));
+            __m256d_u s1 =
+                _mm256_mul_pd(_mm256_sub_pd(t1, upper), _mm256_permute4x64_pd(m[1], _MM_SHUFFLE(2, 3, 3, 3)));
 
             __m256d_u det = _mm256_add_pd(s0, s1);
             det = _mm256_mul_pd(det, _mm256_setr_pd(1.0, -1.0, 1.0, -1.0));
@@ -863,115 +804,205 @@ namespace amal
             out[1] = _mm256_mul_pd(adj1, invd);
         }
 
-        inline void inverse_matrix(__m256d_u const (&m)[3], __m256d_u (&out)[3])
+        inline void inverse_matrix(const __m256d_u (&m)[3], __m256d_u (&out)[3])
         {
-            __m256d_u a = m[0], b = m[1], c = m[2];
-            __m256d_u i0 = cross_yzx(b, c);
-            __m256d_u i1 = cross_yzx(c, a);
-            __m256d_u i2 = cross_yzx(a, b);
-            __m256d_u det = dot(a, i0);
-            __m256d_u invd = _mm256_div_pd(_mm256_set1_pd(1.0), det);
-            out[0] = _mm256_mul_pd(i0, invd);
-            out[1] = _mm256_mul_pd(i1, invd);
-            out[2] = _mm256_mul_pd(i2, invd);
+            __m256d a = m[0], b = m[1], c = m[2];
+
+            __m256d i0 = (__m256d)cross_yzx((__m256d_u)b, (__m256d_u)c); // col0 adj(a)
+            __m256d i1 = (__m256d)cross_yzx((__m256d_u)c, (__m256d_u)a); // col1
+            __m256d i2 = (__m256d)cross_yzx((__m256d_u)a, (__m256d_u)b); // col2
+
+            __m256d det = (__m256d)dot((__m256d_u)a, (__m256d_u)i0);
+            det = _mm256_permute4x64_pd(det, _MM_SHUFFLE(0, 0, 0, 0));
+
+            __m256d invd = _mm256_div_pd(_mm256_set1_pd(1.0), det);
+
+            i0 = _mm256_mul_pd(i0, invd);
+            i1 = _mm256_mul_pd(i1, invd);
+            i2 = _mm256_mul_pd(i2, invd);
+
+            const __m256d mask_w0 = _mm256_castsi256_pd(_mm256_set_epi64x(0, -1LL, -1LL, -1LL));
+            i0 = _mm256_and_pd(i0, mask_w0);
+            i1 = _mm256_and_pd(i1, mask_w0);
+            i2 = _mm256_and_pd(i2, mask_w0);
+
+            out[0] = i0;
+            out[1] = i1;
+            out[2] = i2;
         }
 
-        inline void inverse_matrix(__m256d_u const (&m)[4], __m256d_u (&out)[4])
+        static inline __m256d mat2_mul(__m256d x, __m256d y)
         {
-            __m256d_u A = m[0], B = m[1], C = m[2], D = m[3];
-        #if defined(__AVX2__)
-            __m256d_u AB_lo = _mm256_unpacklo_pd(A, B);
-            __m256d_u AB_hi = _mm256_unpackhi_pd(A, B);
-            __m256d_u CD_lo = _mm256_unpacklo_pd(C, D);
-            __m256d_u CD_hi = _mm256_unpackhi_pd(C, D);
+            __m256d xc0 = _mm256_permute2f128_pd(x, x, 0x00);
+            __m256d xc1 = _mm256_permute2f128_pd(x, x, 0x11);
+            __m256d yrow0 = _mm256_shuffle_pd(y, y, 0x0);
+            __m256d yrow1 = _mm256_shuffle_pd(y, y, 0xF);
+            return AMAL_FMA_ADD_PD(xc1, yrow1, _mm256_mul_pd(xc0, yrow0));
+        }
 
-            auto perm = [](const __m256d_u &v) { return _mm256_permute4x64_pd(v, _MM_SHUFFLE(2, 3, 0, 1)); };
+        static inline __m256d mat2_inv(__m256d V)
+        {
+            __m128d lo = _mm256_castpd256_pd128(V);       // [a00 a10]
+            __m128d hi = _mm256_extractf128_pd(V, 1);     // [a01 a11]
+            __m128d hi_sw = _mm_shuffle_pd(hi, hi, 0b01); // [a11 a01]
+            __m128d mul = _mm_mul_pd(lo, hi_sw);          // [a00*a11, a10*a01]
+            __m128d det128 = _mm_hsub_pd(mul, mul);       // [det, det]
+            __m128d invd128 = _mm_div_sd(_mm_set_sd(1.0), det128);
+            __m256d invd = _mm256_broadcast_sd((const double *)&invd128);
+            __m256d rev = _mm256_permute4x64_pd(V, 0b00011011);
+            static const __m256i sgn = _mm256_set_epi64x(0x0, 0x8000000000000000ull, 0x8000000000000000ull, 0x0);
+            __m256d adj = _mm256_xor_pd(rev, _mm256_castsi256_pd(sgn));
+            return _mm256_mul_pd(adj, invd);
+        }
 
-            __m256d_u cof0 = _mm256_sub_pd(_mm256_mul_pd(AB_lo, CD_hi), _mm256_mul_pd(perm(AB_lo), perm(CD_hi)));
-            __m256d_u cof1 = _mm256_sub_pd(_mm256_mul_pd(AB_hi, CD_lo), _mm256_mul_pd(perm(AB_hi), perm(CD_lo)));
-            __m256d_u cof2 = _mm256_sub_pd(_mm256_mul_pd(CD_lo, AB_hi), _mm256_mul_pd(perm(CD_lo), perm(AB_hi)));
-            __m256d_u cof3 = _mm256_sub_pd(_mm256_mul_pd(CD_hi, AB_lo), _mm256_mul_pd(perm(CD_hi), perm(AB_lo)));
+        static inline __m256d block2x2_top(__m256d c0, __m256d c1)
+        {
+            __m128d a_lo = _mm256_castpd256_pd128(c0); // [r00 r10]
+            __m128d b_lo = _mm256_castpd256_pd128(c1); // [r01 r11]
+            return _mm256_set_m128d(b_lo, a_lo);       // [r00,r10,r01,r11]
+        }
+        static inline __m256d block2x2_bottom(__m256d c0, __m256d c1)
+        {
+            __m128d a_hi = _mm256_extractf128_pd(c0, 1); // [r20 r30]
+            __m128d b_hi = _mm256_extractf128_pd(c1, 1); // [r21 r31]
+            return _mm256_set_m128d(b_hi, a_hi);         // [r20,r30,r21,r31]
+        }
 
-            __m256d_u t0 = _mm256_unpacklo_pd(cof0, cof1);
-            __m256d_u t1 = _mm256_unpacklo_pd(cof2, cof3);
-            out[0] = _mm256_permute2f128_pd(t0, t1, 0x20);
+        static inline __m256d make_col_from_blocks_0(__m256d TL, __m256d BL)
+        {
+            __m128d tl_lo = _mm256_castpd256_pd128(TL);
+            __m128d bl_lo = _mm256_castpd256_pd128(BL);
+            return _mm256_set_m128d(bl_lo, tl_lo);
+        }
+        static inline __m256d make_col_from_blocks_1(__m256d TL, __m256d BL)
+        {
+            __m128d tl_hi = _mm256_extractf128_pd(TL, 1);
+            __m128d bl_hi = _mm256_extractf128_pd(BL, 1);
+            return _mm256_set_m128d(bl_hi, tl_hi);
+        }
+        static inline __m256d make_col_from_blocks_2(__m256d TR, __m256d BR)
+        {
+            __m128d tr_lo = _mm256_castpd256_pd128(TR);
+            __m128d br_lo = _mm256_castpd256_pd128(BR);
+            return _mm256_set_m128d(br_lo, tr_lo);
+        }
+        static inline __m256d make_col_from_blocks_3(__m256d TR, __m256d BR)
+        {
+            __m128d tr_hi = _mm256_extractf128_pd(TR, 1);
+            __m128d br_hi = _mm256_extractf128_pd(BR, 1);
+            return _mm256_set_m128d(br_hi, tr_hi);
+        }
 
-            __m256d_u u0 = _mm256_unpackhi_pd(cof0, cof1);
-            __m256d_u u1 = _mm256_unpackhi_pd(cof2, cof3);
-            out[1] = _mm256_permute2f128_pd(u0, u1, 0x20);
-            out[2] = _mm256_permute2f128_pd(t0, t1, 0x31);
-            out[3] = _mm256_permute2f128_pd(u0, u1, 0x31);
-        #else
-            __m256d_u t0 = _mm256_shuffle_pd(A, B, 0x0);
-            __m256d_u t1 = _mm256_shuffle_pd(C, D, 0x0);
-            __m256d_u t2 = _mm256_shuffle_pd(A, B, 0xF);
-            __m256d_u t3 = _mm256_shuffle_pd(C, D, 0xF);
+        inline void inverse_matrix(const __m256d_u (&m)[4], __m256d_u (&out)[4]) noexcept
+        {
+            __m256d c0 = (__m256d)m[0];
+            __m256d c1 = (__m256d)m[1];
+            __m256d c2 = (__m256d)m[2];
+            __m256d c3 = (__m256d)m[3];
 
-            __m256d_u cof0 = _mm256_sub_pd(_mm256_mul_pd(t0, t3), _mm256_mul_pd(t2, t1));
-            __m256d_u cof1 = _mm256_sub_pd(_mm256_mul_pd(t2, t0), _mm256_mul_pd(t1, t3));
-            __m256d_u cof2 = _mm256_sub_pd(_mm256_mul_pd(t3, t1), _mm256_mul_pd(t0, t2));
-            __m256d_u cof3 = _mm256_sub_pd(_mm256_mul_pd(t1, t3), _mm256_mul_pd(t2, t0));
+            __m256d a = block2x2_top(c0, c1);
+            __m256d b = block2x2_top(c2, c3);
+            __m256d c = block2x2_bottom(c0, c1);
+            __m256d d = block2x2_bottom(c2, c3);
 
-            out[0] = _mm256_setr_pd(cof0[0], cof1[0], cof2[0], cof3[0]);
-            out[1] = _mm256_setr_pd(cof0[1], cof1[1], cof2[1], cof3[1]);
-            out[2] = _mm256_setr_pd(cof0[2], cof1[2], cof2[2], cof3[2]);
-            out[3] = _mm256_setr_pd(cof0[3], cof1[3], cof2[3], cof3[3]);
-        #endif
-            const __m256d_u S0 = _mm256_setr_pd(+1, -1, +1, -1);
-            const __m256d_u S1 = _mm256_setr_pd(-1, +1, -1, +1);
-            out[0] = _mm256_mul_pd(out[0], S0);
-            out[1] = _mm256_mul_pd(out[1], S1);
-            out[2] = _mm256_mul_pd(out[2], S0);
-            out[3] = _mm256_mul_pd(out[3], S1);
+            // det(a)
+            __m128d a_lo = _mm256_castpd256_pd128(a);           // [a00 a10]
+            __m128d a_hi = _mm256_extractf128_pd(a, 1);         // [a01 a11]
+            __m128d a_hi_sw = _mm_shuffle_pd(a_hi, a_hi, 0b01); // [a11 a01]
+            __m128d a_mul = _mm_mul_pd(a_lo, a_hi_sw);          // [a00*a11, a10*a01]
+            __m128d det_a128 = _mm_hsub_pd(a_mul, a_mul);       // [deta, deta]
+            double det_a;
+            _mm_store_sd(&det_a, det_a128);
 
-            __m256d_u det = dot(A, out[0]);
-            __m256d_u invd = _mm256_div_pd(_mm256_set1_pd(1.0), det);
-            out[0] = _mm256_mul_pd(out[0], invd);
-            out[1] = _mm256_mul_pd(out[1], invd);
-            out[2] = _mm256_mul_pd(out[2], invd);
-            out[3] = _mm256_mul_pd(out[3], invd);
+            if (fabs(det_a) > 1e-18)
+            {
+                __m256d inv_a = mat2_inv(a);
+                __m256d a_inv_b = mat2_mul(inv_a, b);
+                __m256d c_inv_a = mat2_mul(c, inv_a);
+                __m256d s = _mm256_sub_pd(d, mat2_mul(c_inv_a, b)); // S = D - c*inv_a*B
+                __m256d inv_s = mat2_inv(s);
+
+                __m256d tl =
+                    _mm256_add_pd(inv_a, mat2_mul(a_inv_b, mat2_mul(inv_s, c_inv_a))); // inv_a + inv_a*b*inv_s*c*inv_a
+                __m256d tr = _mm256_sub_pd(_mm256_setzero_pd(), mat2_mul(a_inv_b, inv_s)); // -inv_a*b*inv_s
+                __m256d bl = _mm256_sub_pd(_mm256_setzero_pd(), mat2_mul(inv_s, c_inv_a)); // -inv_s*c*inv_a
+                __m256d br = inv_s;
+
+                out[0] = (__m256d_u)make_col_from_blocks_0(tl, bl);
+                out[1] = (__m256d_u)make_col_from_blocks_1(tl, bl);
+                out[2] = (__m256d_u)make_col_from_blocks_2(tr, br);
+                out[3] = (__m256d_u)make_col_from_blocks_3(tr, br);
+                return;
+            }
+
+            __m256d inv_d = mat2_inv(d);
+            __m256d b_inv_d = mat2_mul(b, inv_d);
+            __m256d inv_dc = mat2_mul(inv_d, c);
+            __m256d t = _mm256_sub_pd(a, mat2_mul(b_inv_d, c)); // T = A - B*inv_d*c
+            __m256d inv_t = mat2_inv(t);
+
+            __m256d tl = inv_t;
+            __m256d tr = _mm256_sub_pd(_mm256_setzero_pd(), mat2_mul(inv_t, b_inv_d));
+            __m256d bl = _mm256_sub_pd(_mm256_setzero_pd(), mat2_mul(inv_dc, inv_t));
+            __m256d br = _mm256_add_pd(inv_d, mat2_mul(inv_dc, mat2_mul(inv_t, b_inv_d)));
+
+            out[0] = (__m256d_u)make_col_from_blocks_0(tl, bl);
+            out[1] = (__m256d_u)make_col_from_blocks_1(tl, bl);
+            out[2] = (__m256d_u)make_col_from_blocks_2(tr, br);
+            out[3] = (__m256d_u)make_col_from_blocks_3(tr, br);
         }
 
         inline void rotate(__m256d_u const (&m)[4], double angle, __m256d_u const &axis4, __m256d_u (&out)[4])
         {
-            __m256d one = _mm256_set1_pd(1.0);
-            __m256d c = _mm256_set1_pd(cos(angle));
-            __m256d s = _mm256_set1_pd(sin(angle));
+            const __m256d one = _mm256_set1_pd(1.0);
+            const __m256d c = _mm256_set1_pd(std::cos(angle));
+            const __m256d s = _mm256_set1_pd(std::sin(angle));
 
-            // normalize axis
-            __m256d dot = _mm256_add_pd(_mm256_mul_pd(axis4, axis4),
-                                        _mm256_permute4x64_pd(_mm256_mul_pd(axis4, axis4), _MM_SHUFFLE(1, 2, 0, 3)));
-            __m256d len = _mm256_sqrt_pd(dot);
-            __m256d axis = _mm256_div_pd(axis4, len);
+            const __m256d sq = _mm256_mul_pd(axis4, axis4);
+            const __m256d dot = _mm256_add_pd(sq, _mm256_permute4x64_pd(sq, _MM_SHUFFLE(1, 2, 0, 3)));
+            const __m256d len = _mm256_sqrt_pd(dot);
+            const __m256d axis = _mm256_div_pd(axis4, len);
 
-            __m256d ic = _mm256_sub_pd(one, c);
+            const __m256d ic = _mm256_sub_pd(one, c);
 
             // splat
-            __m256d ax = _mm256_permute4x64_pd(axis, _MM_SHUFFLE(0, 0, 0, 0));
-            __m256d ay = _mm256_permute4x64_pd(axis, _MM_SHUFFLE(1, 1, 1, 1));
-            __m256d az = _mm256_permute4x64_pd(axis, _MM_SHUFFLE(2, 2, 2, 2));
+            const __m256d ax = _mm256_permute4x64_pd(axis, _MM_SHUFFLE(0, 0, 0, 0));
+            const __m256d ay = _mm256_permute4x64_pd(axis, _MM_SHUFFLE(1, 1, 1, 1));
+            const __m256d az = _mm256_permute4x64_pd(axis, _MM_SHUFFLE(2, 2, 2, 2));
 
-            // build rotation coefficients
-            __m256d r00 = _mm256_add_pd(c, _mm256_mul_pd(ic, _mm256_mul_pd(ax, ax)));
-            __m256d r01 = _mm256_add_pd(_mm256_mul_pd(ic, _mm256_mul_pd(ax, ay)), _mm256_mul_pd(s, az));
-            __m256d r02 = _mm256_sub_pd(_mm256_mul_pd(ic, _mm256_mul_pd(ax, az)), _mm256_mul_pd(s, ay));
+            const __m256d xx = _mm256_mul_pd(ax, ax);
+            const __m256d yy = _mm256_mul_pd(ay, ay);
+            const __m256d zz = _mm256_mul_pd(az, az);
 
-            __m256d r10 = _mm256_sub_pd(_mm256_mul_pd(ic, _mm256_mul_pd(ay, ax)), _mm256_mul_pd(s, az));
-            __m256d r11 = _mm256_add_pd(c, _mm256_mul_pd(ic, _mm256_mul_pd(ay, ay)));
-            __m256d r12 = _mm256_add_pd(_mm256_mul_pd(ic, _mm256_mul_pd(ay, az)), _mm256_mul_pd(s, ax));
+            const __m256d xy = _mm256_mul_pd(ax, ay);
+            const __m256d xz = _mm256_mul_pd(ax, az);
+            const __m256d yz = _mm256_mul_pd(ay, az);
 
-            __m256d r20 = _mm256_add_pd(_mm256_mul_pd(ic, _mm256_mul_pd(az, ax)), _mm256_mul_pd(s, ay));
-            __m256d r21 = _mm256_sub_pd(_mm256_mul_pd(ic, _mm256_mul_pd(az, ay)), _mm256_mul_pd(s, ax));
-            __m256d r22 = _mm256_add_pd(c, _mm256_mul_pd(ic, _mm256_mul_pd(az, az)));
+            const __m256d saz = _mm256_mul_pd(s, az);
+            const __m256d say = _mm256_mul_pd(s, ay);
+            const __m256d sax = _mm256_mul_pd(s, ax);
 
-            out[0] = _mm256_add_pd(_mm256_add_pd(_mm256_mul_pd(m[0], r00), _mm256_mul_pd(m[1], r01)),
-                                   _mm256_mul_pd(m[2], r02));
+            const __m256d r00 = AMAL_FMA_ADD_PD(ic, xx, c); // c + ic*xx
+            const __m256d r11 = AMAL_FMA_ADD_PD(ic, yy, c); // c + ic*yy
+            const __m256d r22 = AMAL_FMA_ADD_PD(ic, zz, c); // c + ic*zz
 
-            out[1] = _mm256_add_pd(_mm256_add_pd(_mm256_mul_pd(m[0], r10), _mm256_mul_pd(m[1], r11)),
-                                   _mm256_mul_pd(m[2], r12));
+            const __m256d r01 = AMAL_FMA_ADD_PD(ic, xy, saz); // ic*xy + s*az
+            const __m256d r02 = AMAL_FMA_SUB_PD(ic, xz, say); // ic*xz - s*ay
 
-            out[2] = _mm256_add_pd(_mm256_add_pd(_mm256_mul_pd(m[0], r20), _mm256_mul_pd(m[1], r21)),
-                                   _mm256_mul_pd(m[2], r22));
+            const __m256d r10 = AMAL_FMA_SUB_PD(ic, xy, saz); // ic*xy - s*az
+            const __m256d r12 = AMAL_FMA_ADD_PD(ic, yz, sax); // ic*yz + s*ax
+
+            const __m256d r20 = AMAL_FMA_ADD_PD(ic, xz, say); // ic*xz + s*ay
+            const __m256d r21 = AMAL_FMA_SUB_PD(ic, yz, sax); // ic*yz - s*ax
+
+            const __m256d t0 = AMAL_FMA_ADD_PD(m[0], r00, _mm256_mul_pd(m[1], r01));
+            out[0] = AMAL_FMA_ADD_PD(m[2], r02, t0);
+
+            const __m256d t1 = AMAL_FMA_ADD_PD(m[0], r10, _mm256_mul_pd(m[1], r11));
+            out[1] = AMAL_FMA_ADD_PD(m[2], r12, t1);
+
+            const __m256d t2 = AMAL_FMA_ADD_PD(m[0], r20, _mm256_mul_pd(m[1], r21));
+            out[2] = AMAL_FMA_ADD_PD(m[2], r22, t2);
 
             out[3] = m[3]; // preserve translation
         }
@@ -984,41 +1015,52 @@ namespace amal
             out[3] = in[3];
         }
 
-        inline void shear(__m256d_u const (&in)[4], __m256d_u const &point, __m256d_u const &lxy_lxz, __m256d_u const &lyx_lyz,
-                          __m256d_u const &lzx_lzy, __m256d_u (&out)[4])
+        inline void shear(const __m256d_u (&in)[4], const __m256d_u &point, const __m256d_u &lxy_lxz,
+                          const __m256d_u &lyx_lyz, const __m256d_u &lzx_lzy, __m256d_u (&out)[4])
         {
-            double lambda_xy = lxy_lxz[0], lambda_xz = lxy_lxz[1];
-            double lambda_yx = lyx_lyz[0], lambda_yz = lyx_lyz[1];
-            double lambda_zx = lzx_lzy[0], lambda_zy = lzx_lzy[1];
+            const double lambda_xy = lxy_lxz[0], lambda_xz = lxy_lxz[1];
+            const double lambda_yx = lyx_lyz[0], lambda_yz = lyx_lyz[1];
+            const double lambda_zx = lzx_lzy[0], lambda_zy = lzx_lzy[1];
 
-            double px = point[0], py = point[1], pz = point[2];
+            const double px = point[0], py = point[1], pz = point[2];
 
-            __m256d_u col0 = _mm256_set_pd(0.0, lambda_xz, lambda_xy, 1.0);
-            __m256d_u col1 = _mm256_set_pd(0.0, lambda_yz, 1.0, lambda_yx);
-            __m256d_u col2 = _mm256_set_pd(0.0, 1.0, lambda_zy, lambda_zx);
-            __m256d_u col3 = _mm256_set_pd(1.0, -pz * (lambda_zx + lambda_zy), -py * (lambda_yx + lambda_yz),
-                                        -px * (lambda_xy + lambda_xz));
+            const __m256d b00 = _mm256_set1_pd(1.0);
+            const __m256d b01 = _mm256_set1_pd(lambda_xy);
+            const __m256d b02 = _mm256_set1_pd(lambda_xz);
+            const __m256d b03 = _mm256_set1_pd(0.0);
 
-            out[0] = _mm256_add_pd(_mm256_add_pd(_mm256_mul_pd(in[0], _mm256_set1_pd(col0[0])),
-                                                 _mm256_mul_pd(in[1], _mm256_set1_pd(col1[0]))),
-                                   _mm256_add_pd(_mm256_mul_pd(in[2], _mm256_set1_pd(col2[0])),
-                                                 _mm256_mul_pd(in[3], _mm256_set1_pd(col3[0]))));
+            __m256d acc0 = AMAL_FMA_ADD_PD(in[1], b01, _mm256_mul_pd(in[0], b00)); // in0*b00 + in1*b01
+            acc0 = AMAL_FMA_ADD_PD(in[2], b02, acc0);                              // + in2*b02
+            out[0] = AMAL_FMA_ADD_PD(in[3], b03, acc0);                            // + in3*b03
 
-            out[1] = _mm256_add_pd(_mm256_add_pd(_mm256_mul_pd(in[0], _mm256_set1_pd(col0[1])),
-                                                 _mm256_mul_pd(in[1], _mm256_set1_pd(col1[1]))),
-                                   _mm256_add_pd(_mm256_mul_pd(in[2], _mm256_set1_pd(col2[1])),
-                                                 _mm256_mul_pd(in[3], _mm256_set1_pd(col3[1]))));
+            const __m256d b10 = _mm256_set1_pd(lambda_yx);
+            const __m256d b11 = _mm256_set1_pd(1.0);
+            const __m256d b12 = _mm256_set1_pd(lambda_yz);
+            const __m256d b13 = _mm256_set1_pd(0.0);
 
-            out[2] = _mm256_add_pd(_mm256_add_pd(_mm256_mul_pd(in[0], _mm256_set1_pd(col0[2])),
-                                                 _mm256_mul_pd(in[1], _mm256_set1_pd(col1[2]))),
-                                   _mm256_add_pd(_mm256_mul_pd(in[2], _mm256_set1_pd(col2[2])),
-                                                 _mm256_mul_pd(in[3], _mm256_set1_pd(col3[2]))));
+            __m256d acc1 = AMAL_FMA_ADD_PD(in[1], b11, _mm256_mul_pd(in[0], b10));
+            acc1 = AMAL_FMA_ADD_PD(in[2], b12, acc1);
+            out[1] = AMAL_FMA_ADD_PD(in[3], b13, acc1);
 
-            out[3] = _mm256_add_pd(_mm256_add_pd(_mm256_mul_pd(in[0], _mm256_set1_pd(col0[3])),
-                                                 _mm256_mul_pd(in[1], _mm256_set1_pd(col1[3]))),
-                                   _mm256_add_pd(_mm256_mul_pd(in[2], _mm256_set1_pd(col2[3])),
-                                                 _mm256_mul_pd(in[3], _mm256_set1_pd(col3[3]))));
+            const __m256d b20 = _mm256_set1_pd(lambda_zx);
+            const __m256d b21 = _mm256_set1_pd(lambda_zy);
+            const __m256d b22 = _mm256_set1_pd(1.0);
+            const __m256d b23 = _mm256_set1_pd(0.0);
+
+            __m256d acc2 = AMAL_FMA_ADD_PD(in[1], b21, _mm256_mul_pd(in[0], b20));
+            acc2 = AMAL_FMA_ADD_PD(in[2], b22, acc2);
+            out[2] = AMAL_FMA_ADD_PD(in[3], b23, acc2);
+
+            const __m256d b30 = _mm256_set1_pd(-px * (lambda_xy + lambda_xz));
+            const __m256d b31 = _mm256_set1_pd(-py * (lambda_yx + lambda_yz));
+            const __m256d b32 = _mm256_set1_pd(-pz * (lambda_zx + lambda_zy));
+            const __m256d b33 = _mm256_set1_pd(1.0);
+
+            __m256d acc3 = AMAL_FMA_ADD_PD(in[1], b31, _mm256_mul_pd(in[0], b30));
+            acc3 = AMAL_FMA_ADD_PD(in[2], b32, acc3);
+            out[3] = AMAL_FMA_ADD_PD(in[3], b33, acc3);
         }
+
     #endif
 #endif
     } // namespace internal

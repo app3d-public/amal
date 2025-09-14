@@ -1,12 +1,29 @@
 #pragma once
 
-#include "../type_info.hpp"
 #include <xmmintrin.h>
+#include "../type_info.hpp"
+
 #if defined(__SSE4_1__) || defined(__AVX2__)
     #include <smmintrin.h>
 #endif
 #if defined(__AVX__)
     #include <immintrin.h>
+#endif
+
+#if defined(AMAL_FMA_ENABLE)
+    #define AMAL_FMA_ADD(a, b, c) _mm_fmadd_ps((a), (b), (c))
+    #define AMAL_FMA_SUB(a, b, c) _mm_fmsub_ps((a), (b), (c))
+    #if defined(__AVX__)
+        #define AMAL_FMA_ADD_PD(a, b, c) _mm256_fmadd_pd((a), (b), (c))
+        #define AMAL_FMA_SUB_PD(a, b, c) _mm256_fmsub_pd((a), (b), (c))
+    #endif
+#else
+    #define AMAL_FMA_ADD(a, b, c) _mm_add_ps(_mm_mul_ps((a), (b)), (c))
+    #define AMAL_FMA_SUB(a, b, c) _mm_sub_ps(_mm_mul_ps((a), (b)), (c))
+    #if defined(__AVX__)
+        #define AMAL_FMA_ADD_PD(a, b, c) _mm256_add_pd(_mm256_mul_pd((a), (b)), (c))
+        #define AMAL_FMA_SUB_PD(a, b, c) _mm256_sub_pd(_mm256_mul_pd((a), (b)), (c))
+    #endif
 #endif
 
 namespace amal
