@@ -86,7 +86,7 @@ namespace amal
             if (exp_h == 0) // zero / denorm
             {
                 if (mant_h == 0)
-                    fbits = sign; // ±0
+                    fbits = sign;
                 else
                 {
                     while ((mant_h & 0x0400) == 0)

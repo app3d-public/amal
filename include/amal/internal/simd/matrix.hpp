@@ -291,7 +291,7 @@ namespace amal
             __m128 tmp3 = _mm_shuffle_ps(c1, c0, _MM_SHUFFLE(3, 3, 3, 3));
             __m128 v3 = _mm_shuffle_ps(tmp3, tmp3, _MM_SHUFFLE(2, 2, 2, 0));
 
-            static const __m128 mask_b = _mm_set_ps(+0.0f, -0.0f, +0.0f, -0.0f); // [-,+,-,+] по [x,y,z,w]
+            static const __m128 mask_b = _mm_set_ps(+0.0f, -0.0f, +0.0f, -0.0f); // [-,+,-,+]
             static const __m128 mask_a = _mm_set_ps(-0.0f, +0.0f, -0.0f, +0.0f); // [+,-,+,-]
 
             __m128 ta = AMAL_FMA_SUB(v1, fac0, _mm_mul_ps(v2, fac1));
@@ -404,12 +404,10 @@ namespace amal
 
             const float px = point[0], py = point[1], pz = point[2];
 
-            // четвертый столбец (трансляция) заранее:
             const float t_x = -px * (l_xy + l_xz);
             const float t_y = -py * (l_yx + l_yz);
             const float t_z = -pz * (l_zx + l_zy);
 
-            // broadcasts, переиспользуются
             const __m128 s_yx = _mm_set1_ps(l_yx);
             const __m128 s_zy = _mm_set1_ps(l_zy);
             const __m128 s_zx = _mm_set1_ps(l_zx);
@@ -421,13 +419,11 @@ namespace amal
             const __m128 s_ty = _mm_set1_ps(t_y);
             const __m128 s_tz = _mm_set1_ps(t_z);
 
-            // читаем входные столбцы один раз
             const __m128 c0 = (__m128)in[0];
             const __m128 c1 = (__m128)in[1];
             const __m128 c2 = (__m128)in[2];
             const __m128 c3 = (__m128)in[3];
 
-            // out[0] = in0*1 + in1*l_yx + in2*l_zx + in3*0
             __m128 acc0 = c0; // *1
             acc0 = AMAL_FMA_ADD(c1, s_yx, acc0);
             acc0 = AMAL_FMA_ADD(c2, s_zx, acc0);
@@ -784,7 +780,7 @@ namespace amal
             __m256d a = m[0];
             __m256d b = m[1];
 
-            // ---------------- det = a00*a11 − a10*a01 ----------------
+            // ---------------- det = a00*a11 - a10*a01 ----------------
             __m128d a_low = _mm256_castpd256_pd128(a); // [a00 a10]
             __m128d b_low = _mm256_castpd256_pd128(b); // [a01 a11]
 
@@ -797,8 +793,8 @@ namespace amal
             __m256d invd = _mm256_set1_pd(1.0 / det);
 
             // ---------------- adjugate ----------------
-            __m256d adj0 = _mm256_setr_pd(+a11, -a01, 0.0, 0.0); // [ d, −b, 0,0 ]
-            __m256d adj1 = _mm256_setr_pd(-a10, +a00, 0.0, 0.0); // [−c,  a, 0,0 ]
+            __m256d adj0 = _mm256_setr_pd(+a11, -a01, 0.0, 0.0); // [ d, b, 0,0 ]
+            __m256d adj1 = _mm256_setr_pd(-a10, +a00, 0.0, 0.0); // [-c,a, 0,0 ]
 
             out[0] = _mm256_mul_pd(adj0, invd);
             out[1] = _mm256_mul_pd(adj1, invd);

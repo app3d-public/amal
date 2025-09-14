@@ -70,16 +70,16 @@ namespace amal
         return AMAL_NVEC(3)(obj);
     }
 
-    template <typename T, bool aligned>
-    inline constexpr mat4 translate(mat4 const &m, AMAL_VEC(3, T, aligned) const &v)
+    template <length_t N, typename T, bool aligned>
+    inline constexpr mat4 translate(mat4 const &m, AMAL_VEC(N, T, aligned) const &v)
     {
         mat4 r(m);
         r[3] = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3];
         return r;
     }
 
-    template<typename T, bool aligned>
-    inline constexpr mat4 translate(AMAL_VEC(3, T, aligned) const &v)
+    template<length_t N, typename T, bool aligned>
+    inline constexpr mat4 translate(AMAL_VEC(N, T, aligned) const &v)
     {
         return translate(mat4(static_cast<T>(1)), v);
     }
