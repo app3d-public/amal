@@ -36,6 +36,31 @@
 
 typedef int __v4si_u __attribute__((__vector_size__(16), __aligned__(1)));
 
+#if defined(__SSE2__) && defined(__GNUC__) && !defined(__clang__)
+    #if defined(__has_builtin) && __has_builtin(__builtin_bit_cast)
+        #define AMAL_V4SI(x)  __builtin_bit_cast(__v4si_u, (x))
+        #define AMAL_M128I(x) __builtin_bit_cast(__m128i, (x))
+    #else
+static inline __v4si_u amal_v4si_from_m128i(__m128i v) noexcept
+{
+    __v4si_u out;
+    __builtin_memcpy(&out, &v, sizeof(out));
+    return out;
+}
+static inline __m128i amal_m128i_from_v4si(__v4si_u v) noexcept
+{
+    __m128i out;
+    __builtin_memcpy(&out, &v, sizeof(out));
+    return out;
+}
+        #define AMAL_V4SI(x)  amal_v4si_from_m128i((x))
+        #define AMAL_M128I(x) amal_m128i_from_v4si((x))
+    #endif
+#else
+    #define AMAL_V4SI(x)  (x)
+    #define AMAL_M128I(x) (x)
+#endif
+
 namespace amal
 {
     using length_t = int;

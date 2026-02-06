@@ -26,20 +26,19 @@
     #endif
 #endif
 
-namespace amal
+namespace amal::internal
 {
-    namespace internal
+    static inline __v4si_u mm_mullo_epi32_compat(__v4si_u a, __v4si_u b)
     {
-        static inline __v4si_u mm_mullo_epi32_compat(__v4si_u a, __v4si_u b)
-        {
 #if defined(__SSE4_1__) || defined(__AVX2__)
-            return _mm_mullo_epi32(a, b);
+        return AMAL_V4SI(_mm_mullo_epi32(AMAL_M128I(a), AMAL_M128I(b)));
 #else
-            __m128i lo = _mm_mul_epu32(a, b);
-            __m128i hi = _mm_mul_epu32(_mm_srli_si128(a, 4), _mm_srli_si128(b, 4));
-            hi = _mm_shuffle_epi32(hi, _MM_SHUFFLE(0, 0, 2, 0));
-            return _mm_unpacklo_epi64(lo, hi);
+        __m128i a128 = AMAL_M128I(a);
+        __m128i b128 = AMAL_M128I(b);
+        __m128i lo = _mm_mul_epu32(a128, b128);
+        __m128i hi = _mm_mul_epu32(_mm_srli_si128(a128, 4), _mm_srli_si128(b128, 4));
+        hi = _mm_shuffle_epi32(hi, _MM_SHUFFLE(0, 0, 2, 0));
+        return AMAL_V4SI(_mm_unpacklo_epi64(lo, hi));
 #endif
-        }
-    } // namespace internal
-} // namespace amal
+    }
+} // namespace amal::internal

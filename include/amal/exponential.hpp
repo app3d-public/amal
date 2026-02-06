@@ -7,7 +7,7 @@
 
 namespace amal
 {
-    using ::pow;
+    using std::pow;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF pow(AMAL_VEC_SELF const &base, AMAL_VEC_SELF const &exponent)
     {
@@ -15,42 +15,42 @@ namespace amal
         return internal::create_by_call(base, exponent, (PFN_pow)std::pow);
     }
 
-    using ::exp;
+    using std::exp;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF exp(AMAL_VEC_SELF const &v)
     {
         return internal::create_by_call(v, std::exp);
     }
 
-    using ::exp2;
+    using std::exp2;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF exp2(AMAL_VEC_SELF const &v)
     {
         return internal::create_by_call(v, std::exp2);
     }
 
-    using ::log;
+    using std::log;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF log(AMAL_VEC_SELF const &v)
     {
         return internal::create_by_call(v, std::log);
     }
 
-    using ::log2;
+    using std::log2;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF log2(AMAL_VEC_SELF const &v)
     {
         return internal::create_by_call(v, std::log2);
     }
 
-    using ::log10;
+    using std::log10;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF log10(AMAL_VEC_SELF const &v)
     {
         return internal::create_by_call(v, std::log10);
     }
 
-    using ::sqrt;
+    using std::sqrt;
 #ifdef AMAL_SIMD_ENABLE
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD sqrt(AMAL_VEC_SELF const &v)

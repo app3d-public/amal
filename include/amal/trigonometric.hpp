@@ -101,7 +101,8 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF atan2(AMAL_VEC_SELF const &y, AMAL_VEC_SELF const &x)
     {
-        return internal::create_by_call(y, x, std::atan2<T>);
+        using atan2_fn = T (*)(T, T);
+        return internal::create_by_call(y, x, static_cast<atan2_fn>(std::atan2));
     }
 
     using std::sinh;
