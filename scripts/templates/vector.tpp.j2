@@ -251,7 +251,17 @@ namespace amal
         {
             return AMAL_NVEC({{N}})(
                 {%- for i in range(N) -%}
-                    call(v.{{ names[i] }}){{ "," if not loop.last else "" }}
+                    call(v[{{i}}]){{ "," if not loop.last else "" }}
+                {%- endfor -%}
+            );
+        }
+
+        template <typename T, bool aligned, typename F>
+        inline constexpr AMAL_NVEC({{N}}) create_by_call(AMAL_NVEC({{N}}) const &v, F call) noexcept
+        {
+            return AMAL_NVEC({{N}})(
+                {%- for i in range(N) -%}
+                    call(v[{{i}}]){{ "," if not loop.last else "" }}
                 {%- endfor -%}
             );
         }
@@ -264,7 +274,7 @@ namespace amal
         {
             return AMAL_NVEC({{N}})(
                 {%- for i in range(N) -%}
-                    call(v1.{{ names[i] }}, v2.{{ names[i] }}){{ "," if not loop.last else "" }}
+                    call(v1[{{i}}], v2[{{i}}]){{ "," if not loop.last else "" }}
                 {%- endfor -%}
             );
         }

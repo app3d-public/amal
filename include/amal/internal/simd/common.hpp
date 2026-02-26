@@ -34,11 +34,16 @@ namespace amal::internal
 
     inline __m128_u mix(__m128_u x, __m128_u y, __v4si_u a)
     {
-        __v4si_u mask = -a;
+    #if defined(__SSE4_1__)
+        return _mm_blendv_ps(x, y, reinterpret_cast<__m128_u &>(a));
+    #else
         __v4si_u xi = reinterpret_cast<__v4si_u &>(x);
         __v4si_u yi = reinterpret_cast<__v4si_u &>(y);
-        __v4si_u result = (xi & ~mask) | (yi & mask);
+        __v4si_u mi = reinterpret_cast<__v4si_u &>(a);
+
+        __v4si_u result = (xi & ~mi) | (yi & mi);
         return reinterpret_cast<__m128_u &>(result);
+    #endif
     }
 
     inline __m128_u min(__m128_u a, __m128_u b) { return _mm_min_ps(a, b); }

@@ -31,7 +31,20 @@ namespace amal
     template <length_t N, typename T, typename U, bool aligned>
     inline AMAL_VEC_VAL_SIMD mix(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y, AMAL_VEC(N, U, aligned) const &a)
     {
-        return AMAL_VEC_SELF(internal::mix(x.s, y.s, a.s));
+        using simd_t = typename AMAL_VEC(N, U, aligned)::simd_type::value_type;
+        if constexpr (std::is_same_v<U, bool>)
+        {
+            __v4si_u mask = {0, 0, 0, 0};
+            for (length_t i = 0; i < N; ++i) mask[i] = a[i] ? -1 : 0;
+            return AMAL_VEC_SELF(internal::mix(x.s, y.s, mask));
+        }
+        else if constexpr (std::is_same_v<__v4si_u, simd_t>)
+            return AMAL_VEC_SELF(internal::mix(x.s, y.s, a.s));
+        else
+        {
+            AMAL_VEC(N, T, aligned) af(a);
+            return x + af * (y - x);
+        }
     }
 #endif
 
