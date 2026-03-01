@@ -69,6 +69,20 @@ namespace amal
         return mix(x, y, AMAL_VEC_SELF(a));
     }
 
+    template <typename T, typename U>
+    inline constexpr std::enable_if_t<is_arithmetic_v<T> && is_arithmetic_v<U>, T> mix(T x, T y, U a)
+    {
+        if constexpr (std::is_same_v<U, bool>) return a ? y : x;
+        const T ta = static_cast<T>(a);
+        return x * (T(1) - ta) + y * ta;
+    }
+
+    template <typename T>
+    inline constexpr T mid(T x, T y)
+    {
+        return mix(x, y, T(0.5));
+    }
+
     template <length_t N, typename T, bool aligned>
     inline constexpr AMAL_VEC_SELF sign(AMAL_VEC_SELF const &x)
     {
