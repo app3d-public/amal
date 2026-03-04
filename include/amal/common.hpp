@@ -307,6 +307,13 @@ namespace amal
         return internal::create_by_call(x, y, (PFN_max)std::max<T>);
     }
 
+    template <length_t N, typename T, bool aligned, typename U>
+    inline constexpr std::enable_if_t<std::is_arithmetic_v<U>, AMAL_VEC_VAL_NOSIMD> max(AMAL_VEC_SELF const &x, U y)
+    {
+        using PFN_max = const T &(*)(const T &, const T &);
+        return internal::create_by_call(x, AMAL_VEC_SELF(y), (PFN_max)std::max<T>);
+    }
+
     using std::minmax;
     template <length_t N, typename T, bool aligned>
     inline std::pair<AMAL_VEC_SELF, AMAL_VEC_SELF> minmax(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y)
