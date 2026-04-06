@@ -5,6 +5,12 @@
 
 namespace amal
 {
+    inline constexpr vec4 rgba8_to_vec4(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255u)
+    {
+        return {static_cast<float>(r) / 255.0f, static_cast<float>(g) / 255.0f, static_cast<float>(b) / 255.0f,
+                static_cast<float>(a) / 255.0f};
+    }
+
     template <typename T>
     inline constexpr std::enable_if_t<is_floating_point_v<T>, T> srgb_to_linear(T c)
     {
