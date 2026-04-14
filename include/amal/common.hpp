@@ -10,6 +10,7 @@
 namespace amal
 {
     using std::abs;
+    using std::isfinite;
 #ifdef AMAL_SIMD_ENABLE
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD abs(AMAL_VEC_SELF const &v)
