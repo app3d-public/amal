@@ -44,6 +44,41 @@ namespace amal
     }
 
     template <typename T>
+    inline constexpr std::enable_if_t<is_floating_point_v<T>, vec<3, T, true>> rgb_to_hsl(T r, T g, T b)
+    {
+        const T max_c = max(max(r, g), b);
+        const T min_c = min(min(r, g), b);
+        const T delta = max_c - min_c;
+        const T l = (max_c + min_c) * static_cast<T>(0.5);
+
+        if (delta <= static_cast<T>(0)) return {static_cast<T>(0), static_cast<T>(0), l};
+
+        const T s = delta / (static_cast<T>(1) - abs(static_cast<T>(2) * l - static_cast<T>(1)));
+        T h = static_cast<T>(0);
+        if (max_c == r) h = (g - b) / delta;
+        else if (max_c == g) h = (b - r) / delta + static_cast<T>(2);
+        else h = (r - g) / delta + static_cast<T>(4);
+
+        h *= static_cast<T>(60);
+        if (h < static_cast<T>(0)) h += static_cast<T>(360);
+        return {h, s, l};
+    }
+
+    template <typename T, bool aligned>
+    inline constexpr std::enable_if_t<is_floating_point_v<T>, vec<3, T, true>> rgb_to_hsl(
+        const vec<3, T, aligned> &color)
+    {
+        return rgb_to_hsl(color.x, color.y, color.z);
+    }
+
+    template <typename T, bool aligned>
+    inline constexpr std::enable_if_t<is_floating_point_v<T>, vec<3, T, true>> rgba_to_hsl(
+        const vec<4, T, aligned> &color)
+    {
+        return rgb_to_hsl(color.x, color.y, color.z);
+    }
+
+    template <typename T>
     inline constexpr std::enable_if_t<is_floating_point_v<T>, T> srgb_to_linear(T c)
     {
         if (c <= static_cast<T>(0.04045)) return c / static_cast<T>(12.92);
