@@ -334,13 +334,12 @@ namespace amal::internal
         __m128 len2 = _mm_dp_ps(axis, axis, 0x7F);
         axis = _mm_mul_ps(axis, _mm_rsqrt_ps(len2));
     #else
-        __m128 t = _mm_mul_ps(axis, axis);
-        __m128 shuf = _mm_shuffle_ps(t, t, _MM_SHUFFLE(2, 3, 0, 1));
-        __m128 sum2 = _mm_add_ps(t, shuf);
-        __m128 dot = _mm_add_ss(sum2, _mm_shuffle_ps(sum2, sum2, _MM_SHUFFLE(1, 1, 1, 1)));
+        const __m128 mask_xyz = _mm_castsi128_ps(_mm_set_epi32(0, -1, -1, -1));
+        __m128 t = _mm_and_ps(_mm_mul_ps(axis, axis), mask_xyz);
+        __m128 sum2 = _mm_add_ps(t, _mm_shuffle_ps(t, t, _MM_SHUFFLE(2, 3, 0, 1)));
+        __m128 dot = _mm_add_ss(sum2, _mm_shuffle_ps(sum2, sum2, _MM_SHUFFLE(2, 2, 2, 2)));
         dot = _mm_shuffle_ps(dot, dot, _MM_SHUFFLE(0, 0, 0, 0));
         __m128 invlen = _mm_rsqrt_ps(dot);
-        const __m128 mask_xyz = _mm_castsi128_ps(_mm_set_epi32(0, -1, -1, -1));
         invlen = _mm_and_ps(invlen, mask_xyz);
         axis = _mm_mul_ps(axis, invlen);
     #endif
