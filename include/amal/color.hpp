@@ -101,13 +101,13 @@ namespace amal
     inline constexpr AMAL_NVEC_VAL_SIMD(4) srgb_to_linear(AMAL_NVEC(4) const &v)
     {
         static_assert(is_floating_point_v<T>, "srgb_to_linear only supports floating point vectors");
-        if consteval { return internal::create_by_call(v, srgb_to_linear<T>); }
+        if consteval { return detail::create_by_call(v, srgb_to_linear<T>); }
         else
         {
             AMAL_NVEC(4) const lo = v / static_cast<T>(12.92);
             AMAL_NVEC(4) const hi = pow((v + static_cast<T>(0.055)) / static_cast<T>(1.055), AMAL_NVEC(4)(2.4));
-            __v4si_u mask = internal::less_than_equal_mask(v.s, AMAL_NVEC(4)(static_cast<T>(0.04045)).s);
-            AMAL_NVEC(4) out(internal::mix(hi.s, lo.s, mask));
+            __v4si_u mask = detail::less_than_equal_mask(v.s, AMAL_NVEC(4)(static_cast<T>(0.04045)).s);
+            AMAL_NVEC(4) out(detail::mix(hi.s, lo.s, mask));
             out[3] = v[3];
             return out;
         }
@@ -116,7 +116,7 @@ namespace amal
     inline constexpr AMAL_NVEC_VAL_NOSIMD(4) srgb_to_linear(AMAL_NVEC(4) const &v)
     {
         static_assert(is_floating_point_v<T>, "srgb_to_linear only supports floating point vectors");
-        if consteval { return internal::create_by_call(v, srgb_to_linear<T>); }
+        if consteval { return detail::create_by_call(v, srgb_to_linear<T>); }
         else
         {
             AMAL_NVEC(4) out{};
@@ -141,7 +141,7 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline constexpr AMAL_VEC_SELF srgb8_to_linear(AMAL_VEC_SELF const &v)
     {
-        if consteval { return internal::create_by_call(v, srgb8_to_linear<T>); }
+        if consteval { return detail::create_by_call(v, srgb8_to_linear<T>); }
         else
         {
             return srgb_to_linear(v / static_cast<T>(255));

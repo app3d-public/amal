@@ -8,7 +8,7 @@
     #include <immintrin.h>
 #endif
 
-namespace amal::internal
+namespace amal::detail
 {
 #if defined(__SSE2__)
     inline __v4si_u less_than_mask(__m128_u x, __m128_u y)
@@ -202,4 +202,4 @@ namespace amal::internal
     }
     #endif
 #endif
-} // namespace amal::internal
+} // namespace amal::detail

@@ -2,7 +2,7 @@
 
 #include "vector.hpp"
 #ifdef AMAL_SIMD_ENABLE
-    #include "internal/simd/exponential.hpp"
+    #include "detail/simd/exponential.hpp"
 #endif
 
 namespace amal
@@ -90,97 +90,85 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD pow(AMAL_VEC_SELF const &base, AMAL_VEC_SELF const &exponent)
     {
-        if constexpr (is_floating_point_v<T>)
-            return AMAL_VEC_SELF(internal::pow(base.s, exponent.s));
-        else
-            return internal::create_by_call(base, exponent, static_cast<T (*)(T, T)>(std::pow));
+        if constexpr (is_floating_point_v<T>) return AMAL_VEC_SELF(detail::pow(base.s, exponent.s));
+        else return detail::create_by_call(base, exponent, static_cast<T (*)(T, T)>(std::pow));
     }
 #endif
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_NOSIMD pow(AMAL_VEC_SELF const &base, AMAL_VEC_SELF const &exponent)
     {
-        return internal::create_by_call(base, exponent, static_cast<T (*)(T, T)>(std::pow));
+        return detail::create_by_call(base, exponent, static_cast<T (*)(T, T)>(std::pow));
     }
 
     using std::exp;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD exp(AMAL_VEC_SELF const &v)
     {
-        if constexpr (is_floating_point_v<T>)
-            return AMAL_VEC_SELF(internal::exp(v.s));
-        else
-            return internal::create_by_call(v, static_cast<T (*)(T)>(std::exp));
+        if constexpr (is_floating_point_v<T>) return AMAL_VEC_SELF(detail::exp(v.s));
+        else return detail::create_by_call(v, static_cast<T (*)(T)>(std::exp));
     }
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_NOSIMD exp(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::exp);
+        return detail::create_by_call(v, std::exp);
     }
 
     using std::exp2;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD exp2(AMAL_VEC_SELF const &v)
     {
-        if constexpr (std::is_floating_point_v<T>)
-            return AMAL_VEC_SELF(internal::exp2(v.s));
-        else
-            return internal::create_by_call(v, static_cast<T (*)(T)>(std::exp2));
+        if constexpr (is_floating_point_v<T>) return AMAL_VEC_SELF(detail::exp2(v.s));
+        else return detail::create_by_call(v, static_cast<T (*)(T)>(std::exp2));
     }
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_NOSIMD exp2(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::exp2);
+        return detail::create_by_call(v, std::exp2);
     }
 
     using std::log;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD log(AMAL_VEC_SELF const &v)
     {
-        if constexpr (is_floating_point_v<T>)
-            return AMAL_VEC_SELF(internal::log(v.s));
-        else
-            return internal::create_by_call(v, static_cast<T (*)(T)>(std::log));
+        if constexpr (is_floating_point_v<T>) return AMAL_VEC_SELF(detail::log(v.s));
+        else return detail::create_by_call(v, static_cast<T (*)(T)>(std::log));
     }
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_NOSIMD log(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::log);
+        return detail::create_by_call(v, std::log);
     }
 
     using std::log2;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD log2(AMAL_VEC_SELF const &v)
     {
-        if constexpr (std::is_floating_point_v<T>)
-            return AMAL_VEC_SELF(internal::log2(v.s));
-        else
-            return internal::create_by_call(v, static_cast<T (*)(T)>(std::log2));
+        if constexpr (is_floating_point_v<T>) return AMAL_VEC_SELF(detail::log2(v.s));
+        else return detail::create_by_call(v, static_cast<T (*)(T)>(std::log2));
     }
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_NOSIMD log2(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::log2);
+        return detail::create_by_call(v, std::log2);
     }
 
     using std::log10;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD log10(AMAL_VEC_SELF const &v)
     {
-        if constexpr (std::is_floating_point_v<T>)
-            return AMAL_VEC_SELF(internal::log10(v.s));
-        else
-            return internal::create_by_call(v, static_cast<T (*)(T)>(std::log10));
+        if constexpr (is_floating_point_v<T>) return AMAL_VEC_SELF(detail::log10(v.s));
+        else return detail::create_by_call(v, static_cast<T (*)(T)>(std::log10));
     }
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_NOSIMD log10(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::log10);
+        return detail::create_by_call(v, std::log10);
     }
 
     using std::sqrt;
@@ -188,7 +176,7 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD sqrt(AMAL_VEC_SELF const &v)
     {
-        return AMAL_VEC_SELF(internal::sqrt(v.s));
+        return AMAL_VEC_SELF(detail::sqrt(v.s));
     }
 #endif
 
@@ -196,7 +184,7 @@ namespace amal
     inline AMAL_VEC_VAL_NOSIMD sqrt(AMAL_VEC_SELF const &v)
     {
         static_assert(is_floating_point_v<T>, "sqrt only supports floating point types");
-        return internal::create_by_call(v, std::sqrt);
+        return detail::create_by_call(v, std::sqrt);
     }
 
     template <typename T>
@@ -209,13 +197,13 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD inverse_sqrt(AMAL_VEC_SELF const &v)
     {
-        return AMAL_VEC_SELF(internal::inverse_sqrt(v.s));
+        return AMAL_VEC_SELF(detail::inverse_sqrt(v.s));
     }
 #endif
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_NOSIMD inverse_sqrt(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, inverse_sqrt<T>);
+        return detail::create_by_call(v, inverse_sqrt<T>);
     }
 } // namespace amal

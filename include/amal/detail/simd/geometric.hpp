@@ -2,7 +2,7 @@
 
 #include "compat.hpp"
 
-namespace amal::internal
+namespace amal::detail
 {
 #if defined(__SSE2__)
     inline __m128_u cross_yzx(__m128_u x, __m128_u y)
@@ -86,4 +86,4 @@ namespace amal::internal
         return _mm256_permute4x64_pd(cross_yzx(a, b), _MM_SHUFFLE(3, 0, 2, 1));
     }
 #endif
-} // namespace amal::internal
+} // namespace amal::detail

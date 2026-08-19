@@ -1,8 +1,8 @@
 #pragma once
 
 #include <acul/bin_stream.hpp>
-#include "../../matrix.hpp"
-#include "../../vector.hpp"
+#include "matrix.hpp"
+#include "vector.hpp"
 
 namespace acul
 {

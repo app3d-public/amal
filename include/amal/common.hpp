@@ -3,7 +3,7 @@
 #include <algorithm>
 #include "vector.hpp"
 #ifdef AMAL_SIMD_ENABLE
-    #include "internal/simd/common.hpp"
+    #include "detail/simd/common.hpp"
 #endif
 #include "compare.hpp"
 
@@ -15,17 +15,15 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD abs(AMAL_VEC_SELF const &v)
     {
-        return AMAL_VEC_SELF(internal::abs(v.s));
+        return AMAL_VEC_SELF(detail::abs(v.s));
     }
 #endif
 
     template <length_t N, typename T, bool aligned>
     inline constexpr AMAL_VEC_VAL_NOSIMD abs(AMAL_NVEC(N) const &v)
     {
-        if constexpr (is_floating_point_v<T>)
-            return internal::create_by_call(v, std::fabs);
-        else
-            return internal::create_by_call(v, std::abs);
+        if constexpr (is_floating_point_v<T>) return detail::create_by_call(v, std::fabs);
+        else return detail::create_by_call(v, std::abs);
     }
 
 #ifdef AMAL_SIMD_ENABLE
@@ -37,10 +35,9 @@ namespace amal
         {
             __v4si_u mask = {0, 0, 0, 0};
             for (length_t i = 0; i < N; ++i) mask[i] = a[i] ? -1 : 0;
-            return AMAL_VEC_SELF(internal::mix(x.s, y.s, mask));
+            return AMAL_VEC_SELF(detail::mix(x.s, y.s, mask));
         }
-        else if constexpr (std::is_same_v<__v4si_u, simd_t>)
-            return AMAL_VEC_SELF(internal::mix(x.s, y.s, a.s));
+        else if constexpr (std::is_same_v<__v4si_u, simd_t>) return AMAL_VEC_SELF(detail::mix(x.s, y.s, a.s));
         else
         {
             AMAL_VEC(N, T, aligned) af(a);
@@ -109,17 +106,15 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD floor(AMAL_VEC_SELF const &v)
     {
-        if constexpr (is_floating_point_v<T>)
-            return AMAL_VEC_SELF(internal::floor(v.s));
-        else
-            return AMAL_VEC_SELF(v.s);
+        if constexpr (is_floating_point_v<T>) return AMAL_VEC_SELF(detail::floor(v.s));
+        else return AMAL_VEC_SELF(v.s);
     }
 #endif
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_NOSIMD floor(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::floor);
+        return detail::create_by_call(v, std::floor);
     }
 
     using std::round;
@@ -127,17 +122,15 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD round(AMAL_VEC_SELF const &v)
     {
-        if constexpr (is_floating_point_v<T>)
-            return AMAL_VEC_SELF(internal::round(v.s));
-        else
-            return AMAL_VEC_SELF(v.s);
+        if constexpr (is_floating_point_v<T>) return AMAL_VEC_SELF(detail::round(v.s));
+        else return AMAL_VEC_SELF(v.s);
     }
 #endif
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_NOSIMD round(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::round);
+        return detail::create_by_call(v, std::round);
     }
     // Rounds a floating-point number to the nearest power of 10.
     template <typename T>
@@ -155,17 +148,15 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD ceil(AMAL_VEC_SELF const &v)
     {
-        if constexpr (is_floating_point_v<T>)
-            return AMAL_VEC_SELF(internal::ceil(v.s));
-        else
-            return AMAL_VEC_SELF(v.s);
+        if constexpr (is_floating_point_v<T>) return AMAL_VEC_SELF(detail::ceil(v.s));
+        else return AMAL_VEC_SELF(v.s);
     }
 #endif
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_NOSIMD ceil(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::ceil);
+        return detail::create_by_call(v, std::ceil);
     }
 
     using std::trunc;
@@ -173,17 +164,15 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD trunc(AMAL_VEC_SELF const &v)
     {
-        if constexpr (is_floating_point_v<T>)
-            return AMAL_VEC_SELF(internal::trunc(v.s));
-        else
-            return AMAL_VEC_SELF(v.s);
+        if constexpr (is_floating_point_v<T>) return AMAL_VEC_SELF(detail::trunc(v.s));
+        else return AMAL_VEC_SELF(v.s);
     }
 #endif
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_NOSIMD trunc(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::trunc);
+        return detail::create_by_call(v, std::trunc);
     }
 
     template <length_t N, typename T, bool aligned>
@@ -202,14 +191,14 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF modf(AMAL_VEC_SELF const &x, AMAL_VEC_SELF &i)
     {
-        return internal::create_by_call(x, i, std::modf);
+        return detail::create_by_call(x, i, std::modf);
     }
 
     using std::fma;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD fma(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y, AMAL_VEC_SELF const &z)
     {
-        return AMAL_VEC_SELF(internal::fma(x.s, y.s, z.s));
+        return AMAL_VEC_SELF(detail::fma(x.s, y.s, z.s));
     }
 
     template <length_t N, typename T, bool aligned>
@@ -231,25 +220,25 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD splat_x(AMAL_VEC_SELF const &v)
     {
-        return AMAL_VEC_SELF(internal::splat<0>(v.s));
+        return AMAL_VEC_SELF(detail::splat<0>(v.s));
     }
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD splat_y(AMAL_VEC_SELF const &v)
     {
-        return AMAL_VEC_SELF(internal::splat<1>(v.s));
+        return AMAL_VEC_SELF(detail::splat<1>(v.s));
     }
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD splat_z(AMAL_VEC_SELF const &v)
     {
-        return AMAL_VEC_SELF(internal::splat<2>(v.s));
+        return AMAL_VEC_SELF(detail::splat<2>(v.s));
     }
 
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD splat_w(AMAL_VEC_SELF const &v)
     {
-        return AMAL_VEC_SELF(internal::splat<3>(v.s));
+        return AMAL_VEC_SELF(detail::splat<3>(v.s));
     }
 
     template <length_t N, typename T, bool aligned>
@@ -281,7 +270,7 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD min(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y)
     {
-        return AMAL_VEC_SELF(internal::min(x.s, y.s));
+        return AMAL_VEC_SELF(detail::min(x.s, y.s));
     }
 #endif
 
@@ -289,7 +278,7 @@ namespace amal
     inline constexpr AMAL_VEC_VAL_NOSIMD min(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y)
     {
         using PFN_min = const T &(*)(const T &, const T &);
-        return internal::create_by_call(x, y, (PFN_min)std::min<T>);
+        return detail::create_by_call(x, y, (PFN_min)std::min<T>);
     }
 
     using std::max;
@@ -297,7 +286,7 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_VAL_SIMD max(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y)
     {
-        return AMAL_VEC_SELF(internal::max(x.s, y.s));
+        return AMAL_VEC_SELF(detail::max(x.s, y.s));
     }
 #endif
 
@@ -305,21 +294,14 @@ namespace amal
     inline constexpr AMAL_VEC_VAL_NOSIMD max(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y)
     {
         using PFN_max = const T &(*)(const T &, const T &);
-        return internal::create_by_call(x, y, (PFN_max)std::max<T>);
+        return detail::create_by_call(x, y, (PFN_max)std::max<T>);
     }
 
     template <length_t N, typename T, bool aligned, typename U>
-    inline constexpr std::enable_if_t<std::is_arithmetic_v<U>, AMAL_VEC_VAL_NOSIMD> max(AMAL_VEC_SELF const &x, U y)
+    inline constexpr std::enable_if_t<is_arithmetic_v<U>, AMAL_VEC_VAL_NOSIMD> max(AMAL_VEC_SELF const &x, U y)
     {
         using PFN_max = const T &(*)(const T &, const T &);
-        return internal::create_by_call(x, AMAL_VEC_SELF(y), (PFN_max)std::max<T>);
-    }
-
-    using std::minmax;
-    template <length_t N, typename T, bool aligned>
-    inline std::pair<AMAL_VEC_SELF, AMAL_VEC_SELF> minmax(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y)
-    {
-        return std::make_pair(min(x, y), max(x, y));
+        return detail::create_by_call(x, AMAL_VEC_SELF(y), (PFN_max)max<T>);
     }
 
     using std::clamp;

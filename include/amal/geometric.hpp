@@ -4,9 +4,9 @@
 #include "exponential.hpp"
 #include "vector.hpp"
 #ifdef AMAL_SIMD_ENABLE
-    #include "internal/simd/common.hpp"
-    #include "internal/simd/exponential.hpp"
-    #include "internal/simd/geometric.hpp"
+    #include "detail/simd/common.hpp"
+    #include "detail/simd/exponential.hpp"
+    #include "detail/simd/geometric.hpp"
 
 #endif
 
@@ -15,7 +15,7 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_TYPE_SIMD(AMAL_NVEC(N), T) dot(AMAL_NVEC(N) const &v1, AMAL_NVEC(N) const &v2)
     {
-        return internal::extract_scalar(internal::dot(v1.s, v2.s));
+        return detail::extract_scalar(detail::dot(v1.s, v2.s));
     }
 
     template <typename T, bool aligned>
@@ -49,7 +49,7 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_TYPE_SIMD(AMAL_VEC_SELF, T) length(AMAL_VEC_SELF const &v)
     {
-        return internal::extract_scalar(internal::sqrt(internal::dot(v.s, v.s)));
+        return detail::extract_scalar(detail::sqrt(detail::dot(v.s, v.s)));
     }
 #endif
 
@@ -74,7 +74,7 @@ namespace amal
     template <typename T, bool aligned>
     inline AMAL_TYPE_SIMD(AMAL_NVEC(3), AMAL_NVEC(3)) cross(AMAL_NVEC(3) const &v1, AMAL_NVEC(3) const &v2)
     {
-        return AMAL_NVEC(3)(internal::cross(v1.s, v2.s));
+        return AMAL_NVEC(3)(detail::cross(v1.s, v2.s));
     }
 
     template <typename T, bool aligned>
@@ -88,7 +88,7 @@ namespace amal
     inline AMAL_VEC_VAL_SIMD normalize(AMAL_VEC_SELF const &v)
     {
         static_assert(is_floating_point_v<T>, "Normalize only valid for floating-point types");
-        return AMAL_VEC_SELF(v.s * internal::inverse_sqrt(internal::dot(v.s, v.s)));
+        return AMAL_VEC_SELF(v.s * detail::inverse_sqrt(detail::dot(v.s, v.s)));
     }
 #endif
 

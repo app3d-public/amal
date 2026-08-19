@@ -26,7 +26,7 @@
     #endif
 #endif
 
-namespace amal::internal
+namespace amal::detail
 {
     static inline __v4si_u mm_mullo_epi32_compat(__v4si_u a, __v4si_u b)
     {
@@ -41,4 +41,4 @@ namespace amal::internal
         return AMAL_V4SI(_mm_unpacklo_epi64(lo, hi));
 #endif
     }
-} // namespace amal::internal
+} // namespace amal::detail

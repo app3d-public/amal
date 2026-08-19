@@ -107,17 +107,17 @@ namespace amal
 #define AMAL_NMAT_VAL_SIMD(C, R)              AMAL_MAT_VAL_SIMD(C, R, T, aligned)
 #define AMAL_NMAT_VAL_NOSIMD(C, R)            AMAL_MAT_VAL_NOSIMD(C, R, T, aligned)
 
-    namespace internal
+    namespace detail
     {
         template <length_t C1, length_t R1, length_t C2, length_t R2, typename T, bool aligned>
         inline constexpr bool is_matrix_multiply_simdable =
             is_simd_enabled_v<typename mat<C1, R1, T, aligned>::simd_type::value_type> &&
             is_simd_enabled_v<typename mat<C2, R2, T, aligned>::simd_type::value_type> &&
             is_simd_enabled_v<typename mat<C2, R1, T, aligned>::simd_type::value_type>;
-    } // namespace internal
+    } // namespace detail
 
 #define AMAL_MAT_MUL_SIMD \
-    std::enable_if_t<internal::is_matrix_multiply_simdable<C1, R1, C2, R2, T, aligned>, AMAL_NMAT(C2, R1)>
+    std::enable_if_t<detail::is_matrix_multiply_simdable<C1, R1, C2, R2, T, aligned>, AMAL_NMAT(C2, R1)>
 #define AMAL_NMAT_MUL_NOSIMD(C1, R1, C2, R2) \
-    std::enable_if_t<!internal::is_matrix_multiply_simdable<C1, R1, C2, R2, T, aligned>, AMAL_NMAT(C2, R1)>
+    std::enable_if_t<!detail::is_matrix_multiply_simdable<C1, R1, C2, R2, T, aligned>, AMAL_NMAT(C2, R1)>
 } // namespace amal

@@ -454,5 +454,5 @@ namespace amal
                (m1.data[3] == m2.data[3]);
     }
 
-#include <amal/internal/matrix_multiply.hpp>
+#include <amal/detail/matrix_multiply.hpp>
 } // namespace amal

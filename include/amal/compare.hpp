@@ -1,9 +1,9 @@
 #pragma once
 
-#include "internal/fwd/matrix.hpp"
-#include "internal/fwd/vector.hpp"
+#include "detail/fwd/matrix.hpp"
+#include "detail/fwd/vector.hpp"
 #ifdef AMAL_SIMD_ENABLE
-    #include "internal/simd/compare.hpp"
+    #include "detail/simd/compare.hpp"
 #endif
 
 namespace amal
@@ -11,7 +11,7 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_TYPE_SIMD(AMAL_BVEC, AMAL_BVEC) less_than(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y)
     {
-        auto mask = internal::less_than_mask(x.s, y.s);
+        auto mask = detail::less_than_mask(x.s, y.s);
         if constexpr (N == 4)
             return AMAL_BVEC(mask[0] != 0, mask[1] != 0, mask[2] != 0, mask[3] != 0);
         else if constexpr (N == 3)
@@ -31,7 +31,7 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_TYPE_SIMD(AMAL_BVEC, AMAL_BVEC) less_than_equal(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y)
     {
-        auto mask = internal::less_than_equal_mask(x.s, y.s);
+        auto mask = detail::less_than_equal_mask(x.s, y.s);
         if constexpr (N == 4)
             return AMAL_BVEC(mask[0] != 0, mask[1] != 0, mask[2] != 0, mask[3] != 0);
         else if constexpr (N == 3)
@@ -52,7 +52,7 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_TYPE_SIMD(AMAL_BVEC, AMAL_BVEC) greater_than(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y)
     {
-        auto mask = internal::greater_than_mask(x.s, y.s);
+        auto mask = detail::greater_than_mask(x.s, y.s);
         if constexpr (N == 4)
             return AMAL_BVEC(mask[0] != 0, mask[1] != 0, mask[2] != 0, mask[3] != 0);
         else if constexpr (N == 3)
@@ -72,7 +72,7 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_TYPE_SIMD(AMAL_BVEC, AMAL_BVEC) greater_thanEqual(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y)
     {
-        auto mask = internal::greater_than_equal_mask(x.s, y.s);
+        auto mask = detail::greater_than_equal_mask(x.s, y.s);
         if constexpr (N == 4)
             return AMAL_BVEC(mask[0] != 0, mask[1] != 0, mask[2] != 0, mask[3] != 0);
         else if constexpr (N == 3)
@@ -93,7 +93,7 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_TYPE_SIMD(AMAL_BVEC, AMAL_BVEC) equal(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y)
     {
-        auto mask = internal::equal_mask(x.s, y.s);
+        auto mask = detail::equal_mask(x.s, y.s);
         if constexpr (N == 4)
             return AMAL_BVEC(mask[0] != 0, mask[1] != 0, mask[2] != 0, mask[3] != 0);
         else if constexpr (N == 3)
@@ -113,7 +113,7 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_TYPE_SIMD(AMAL_BVEC, AMAL_BVEC) not_equal(AMAL_VEC_SELF const &x, AMAL_VEC_SELF const &y)
     {
-        auto mask = internal::equal_mask(x.s, y.s);
+        auto mask = detail::equal_mask(x.s, y.s);
         if constexpr (N == 4)
             return AMAL_BVEC(mask[0] != 0, mask[1] != 0, mask[2] != 0, mask[3] != 0);
         else if constexpr (N == 3)

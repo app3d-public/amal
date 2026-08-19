@@ -1,9 +1,9 @@
 #pragma once
 
-#include <amal/internal/fwd/matrix.hpp>
-#include <amal/internal/vec{{ C }}.hpp>
+#include <amal/detail/fwd/matrix.hpp>
+#include <amal/detail/vec{{ C }}.hpp>
 {% if C != R %}
-#include <amal/internal/vec{{ R }}.hpp>
+#include <amal/detail/vec{{ R }}.hpp>
 {% endif %}
 #include <cassert>
 
@@ -61,7 +61,7 @@ namespace amal
                 ): data{ {%- for j in range(C) %} c{{ j }}{{ "," if not loop.last }}{%- endfor %} } {}
 
         template <typename V, std::enable_if_t<std::is_same_v<V, typename simd_type::value_type> &&
-                internal::is_simd_enabled_v<V>, int> = 0>
+                detail::is_simd_enabled_v<V>, int> = 0>
         constexpr mat(V const (&s)[{{ C }}]) noexcept
             : data{
                 {% for i in range(C) -%}

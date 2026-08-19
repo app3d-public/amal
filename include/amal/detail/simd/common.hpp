@@ -10,7 +10,7 @@
     #include <immintrin.h>
 #endif
 
-namespace amal::internal
+namespace amal::detail
 {
 #if defined(__SSE2__)
     inline __m128_u abs(__m128_u x)
@@ -197,4 +197,4 @@ namespace amal::internal
 
     inline __m256d_u max(__m256d_u a, __m256d_u b) { return _mm256_max_pd(a, b); }
 #endif
-} // namespace amal::internal
+} // namespace amal::detail

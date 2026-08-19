@@ -4,7 +4,7 @@
 
 namespace amal
 {
-    namespace internal
+    namespace detail
     {
         template <typename T>
         struct rect_base
@@ -19,10 +19,10 @@ namespace amal
             rect_base(value_type offset, value_type size) : offset(offset), size(size) {}
             rect_base() : offset(static_cast<value_type>(0)), size(static_cast<value_type>(0)) {}
         };
-    } // namespace internal
+    } // namespace detail
 
-    using rect = internal::rect_base<vec2>;
-    using irect = internal::rect_base<ivec2>;
+    using rect = detail::rect_base<vec2>;
+    using irect = detail::rect_base<ivec2>;
 
     template <typename R>
     inline R::value_type get_rect_left(const R &r)

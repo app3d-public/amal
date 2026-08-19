@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cassert>
-#include <amal/internal/fwd/vector.hpp>
+#include <amal/detail/fwd/vector.hpp>
 
 namespace amal
 {
@@ -12,7 +12,7 @@ namespace amal
         {%- set caps  = ['X','Y','Z','W'] %}
 
         using value_type = T;
-        using simd_type = internal::simd_type<{{N}}, T, aligned>;
+        using simd_type = detail::simd_type<{{N}}, T, aligned>;
 
         union
         {
@@ -46,7 +46,7 @@ namespace amal
         constexpr vec &operator=(vec &&) noexcept = default;
 
         template <typename V,
-            std::enable_if_t<std::is_same<V, typename simd_type::value_type>::value && internal::is_simd_enabled_v<V>, int> = 0>
+            std::enable_if_t<std::is_same<V, typename simd_type::value_type>::value && detail::is_simd_enabled_v<V>, int> = 0>
         constexpr explicit vec(V simd) noexcept : s(simd) {}
 
         template <length_t L, AMAL_CONSTRUCT_SIMD>
@@ -71,8 +71,8 @@ namespace amal
         template <length_t M, class U, bool A>
         constexpr vec& operator=(AMAL_VEC(M, U, A) const& rhs)
         {
-            constexpr bool L_SIMD     = internal::is_simd_enabled_v<typename vec::simd_type::value_type>;
-            constexpr bool R_SIMD     = internal::is_simd_enabled_v<typename AMAL_VEC(M, U, A)::simd_type::value_type>;
+            constexpr bool L_SIMD     = detail::is_simd_enabled_v<typename vec::simd_type::value_type>;
+            constexpr bool R_SIMD     = detail::is_simd_enabled_v<typename AMAL_VEC(M, U, A)::simd_type::value_type>;
 
             if constexpr (L_SIMD && R_SIMD && std::is_same_v<T, U>)
                 this->s = rhs.s;
@@ -244,7 +244,7 @@ namespace amal
             } {}
     };
 
-    namespace internal
+    namespace detail
     {
         template <typename T, bool aligned>
         inline constexpr AMAL_NVEC({{N}}) create_by_call(AMAL_NVEC({{N}}) const &v, T (*call)(T)) noexcept
@@ -278,5 +278,5 @@ namespace amal
                 {%- endfor -%}
             );
         }
-    } // namespace internal
+    } // namespace detail
 }

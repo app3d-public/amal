@@ -67,7 +67,7 @@ namespace amal
 
     typedef struct half half;
 
-    namespace internal
+    namespace detail
     {
         struct simd_disabled
         {
@@ -126,10 +126,10 @@ namespace amal
         struct is_floating_point<half> : public std::true_type
         {
         };
-    } // namespace internal
+    } // namespace detail
 
     template <class T>
-    struct is_floating_point : public internal::is_floating_point<std::__remove_cv_t<T>>
+    struct is_floating_point : public detail::is_floating_point<std::__remove_cv_t<T>>
     {
     };
 
@@ -146,13 +146,13 @@ namespace amal
     inline constexpr bool is_arithmetic_v = is_arithmetic<T>::value;
 
 #define AMAL_TYPE_SIMD(C, ...) \
-    std::enable_if_t<internal::is_simd_enabled_v<typename C::simd_type::value_type>, __VA_ARGS__>
+    std::enable_if_t<detail::is_simd_enabled_v<typename C::simd_type::value_type>, __VA_ARGS__>
 #define AMAL_TYPE_NOSIMD(C, ...) \
-    std::enable_if_t<!internal::is_simd_enabled_v<typename C::simd_type::value_type>, __VA_ARGS__>
+    std::enable_if_t<!detail::is_simd_enabled_v<typename C::simd_type::value_type>, __VA_ARGS__>
 #define AMAL_CONSTRUCT_SIMD \
-    typename V = typename simd_type::value_type, std::enable_if_t<internal::is_simd_enabled_v<V>, int> = 0
+    typename V = typename simd_type::value_type, std::enable_if_t<detail::is_simd_enabled_v<V>, int> = 0
 #define AMAL_CONSTRUCT_NOSIMD \
-    typename V = typename simd_type::value_type, std::enable_if_t<!internal::is_simd_enabled_v<V>, int> = 0
+    typename V = typename simd_type::value_type, std::enable_if_t<!detail::is_simd_enabled_v<V>, int> = 0
 
     typedef unsigned int uint;
 } // namespace amal

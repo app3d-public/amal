@@ -11,6 +11,7 @@ add_test_files(amal matrix matrix.cpp)
 add_test_files(amal trigonometric trigonometric.cpp)
 add_test_files(amal transform transform.cpp)
 add_test_files(amal half half.cpp)
+add_test_files(amal bezier bezier.cpp)
 
 if(ENABLE_COVERAGE)
     add_test_coverage(amal)

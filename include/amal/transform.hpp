@@ -5,16 +5,16 @@
 
 namespace amal
 {
-    namespace internal
+    namespace detail
     {
         template <length_t N, typename T, bool aligned>
         inline constexpr bool is_mat4_nvec_simdable =
             is_simd_enabled_v<typename mat<4, 4, T, true>::simd_type::value_type> &&
             is_simd_enabled_v<typename vec<N, T, aligned>::simd_type::value_type>;
 
-#define AMAL_MAT4_SIMD(N)   std::enable_if_t<internal::is_mat4_nvec_simdable<N, T, aligned>, mat4>
-#define AMAL_MAT4_NOSIMD(N) std::enable_if_t<!internal::is_mat4_nvec_simdable<N, T, aligned>, mat4>
-    } // namespace internal
+#define AMAL_MAT4_SIMD(N)   std::enable_if_t<detail::is_mat4_nvec_simdable<N, T, aligned>, mat4>
+#define AMAL_MAT4_NOSIMD(N) std::enable_if_t<!detail::is_mat4_nvec_simdable<N, T, aligned>, mat4>
+    } // namespace detail
 
     template <typename T, bool aligned>
     inline AMAL_NVEC(2) screen_to_ndc(const AMAL_NVEC(2) & screen, int x, int y)
@@ -91,7 +91,7 @@ namespace amal
         using simd_t = typename mat4::simd_type::value_type;
         simd_t out[4];
         __builtin_memset(out, 0, sizeof(out));
-        internal::rotate(*reinterpret_cast<simd_t const(*)[4]>(m.data), angle, axis.s, out);
+        detail::rotate(*reinterpret_cast<simd_t const(*)[4]>(m.data), angle, axis.s, out);
         return mat4(out);
     }
 
@@ -101,7 +101,7 @@ namespace amal
         static_assert(is_floating_point_v<T>, "rotate only supports floating point types");
         using simd_t = typename mat4::simd_type::value_type;
         simd_t out[4];
-        internal::rotate(*reinterpret_cast<simd_t const(*)[4]>(m.data), angle, axis.s, out);
+        detail::rotate(*reinterpret_cast<simd_t const(*)[4]>(m.data), angle, axis.s, out);
         return mat4(out);
     }
 
@@ -179,7 +179,7 @@ namespace amal
         using simd_t = typename mat4::simd_type::value_type;
         simd_t out[4];
         __builtin_memset(out, 0, sizeof(out));
-        internal::scale(*reinterpret_cast<simd_t const(*)[4]>(m.data), axis.s, out);
+        detail::scale(*reinterpret_cast<simd_t const(*)[4]>(m.data), axis.s, out);
         return mat4(out);
     }
 
@@ -189,7 +189,7 @@ namespace amal
         static_assert(is_floating_point_v<T>, "scale only supports floating point types");
         using simd_t = typename mat4::simd_type::value_type;
         simd_t out[4];
-        internal::scale(*reinterpret_cast<simd_t const(*)[4]>(m.data), axis.s, out);
+        detail::scale(*reinterpret_cast<simd_t const(*)[4]>(m.data), axis.s, out);
         return mat4(out);
     }
 
@@ -213,7 +213,7 @@ namespace amal
         using simd_t = typename mat4::simd_type::value_type;
         simd_t out[4];
         __builtin_memset(out, 0, sizeof(out));
-        internal::shear(*reinterpret_cast<simd_t const(*)[4]>(m.data), p.s, l_x.s, l_y.s, l_z.s, out);
+        detail::shear(*reinterpret_cast<simd_t const(*)[4]>(m.data), p.s, l_x.s, l_y.s, l_z.s, out);
         return mat4(out);
     }
 
@@ -224,7 +224,7 @@ namespace amal
         static_assert(is_floating_point_v<T>, "shear only supports floating point types");
         using simd_t = typename mat4::simd_type::value_type;
         simd_t out[4];
-        internal::shear(*reinterpret_cast<simd_t const(*)[4]>(m.data), p.s, l_x.s, l_y.s, l_z.s, out);
+        detail::shear(*reinterpret_cast<simd_t const(*)[4]>(m.data), p.s, l_x.s, l_y.s, l_z.s, out);
         return mat4(out);
     }
 

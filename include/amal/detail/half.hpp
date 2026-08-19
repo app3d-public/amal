@@ -12,7 +12,7 @@
 #define AMAL_HALF_UNDERFLOW(x) x
 #define AMAL_HALF_INVALID      0x7FFF
 
-namespace amal::internal
+namespace amal::detail
 {
     typedef uint_least16_t uint16;
     typedef uint_fast32_t uint32;
@@ -184,4 +184,4 @@ namespace amal::internal
     }
 
     inline uint32 arithmetic_shift(uint32 arg, int i) { return static_cast<int32>(arg) >> i; }
-} // namespace amal::internal
+} // namespace amal::detail

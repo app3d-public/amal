@@ -1,7 +1,7 @@
 #pragma once
 
 #include <amal/common.hpp>
-#include <amal/internal/vec4.hpp>
+#include <amal/detail/vec4.hpp>
 #include "../fwd/matrix.hpp"
 #ifdef AMAL_SIMD_ENABLE
     #include "../simd/common.hpp"
@@ -16,7 +16,7 @@ namespace amal
         using simd_t = typename AMAL_NMAT(R, C)::simd_type::value_type;
         simd_t out[C];
         if constexpr (R < 4) __builtin_memset(out, 0, sizeof(out));
-        internal::transpose(*reinterpret_cast<simd_t const(*)[C]>(m.data), out);
+        detail::transpose(*reinterpret_cast<simd_t const(*)[C]>(m.data), out);
         return AMAL_NMAT(R, C)(out);
     }
 
@@ -81,7 +81,7 @@ namespace amal
     inline AMAL_TYPE_SIMD(AMAL_NMAT(R, C), T) determinant(AMAL_NMAT(R, C) const &m)
     {
         static_assert(R == C, "Matrix must be square");
-        return internal::extract_scalar(internal::determinant(m.data));
+        return detail::extract_scalar(detail::determinant(m.data));
     }
 
     template <length_t R, length_t C, typename T, bool aligned>
@@ -131,7 +131,7 @@ namespace amal
         using simd_t = typename AMAL_NMAT(R, C)::simd_type::value_type;
         simd_t out[C];
         if constexpr (R < 4) __builtin_memset(out, 0, sizeof(out));
-        internal::inverse_matrix(*reinterpret_cast<simd_t const(*)[C]>(m.data), out);
+        detail::inverse_matrix(*reinterpret_cast<simd_t const(*)[C]>(m.data), out);
         return AMAL_NMAT(R, C)(out);
     }
 

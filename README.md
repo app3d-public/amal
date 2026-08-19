@@ -17,9 +17,16 @@ The amal is not a fully constexpr-ready library by default settings in accordanc
 - Half-precision arithmetic is not IEEE 754-compliant
 
 ## Dependencies:
-- [acbt](https://github.com/app3d-public/acbt)
-- [acul](https://github.com/app3d-public/acul) - Optional. Used for acul integration only
+- [acbt](https://repos.wusikijeronii.me/app3d/acbt)
 - [jinja2 Python Package](https://pypi.org/project/Jinja2/)
+
+### Acul integration
+[Acul](https://repos.wusikijeronii.me/app3d/acul) is required for the following Amal features:
+
+- String processing
+- Structure serialization
+- Curves
+- Tests
 
 ## Building
 ### Supported compilers:
@@ -42,7 +49,7 @@ Amal is provided as CMake interface library.
 - `AMAL_NO_GLOBAL_ALIASES`: Disable global type aliases
 
 #### Options:
-- `AMAL_INTEGRATE_ACUL`: Specialize acul functions
+- `AMAL_INTEGRATE_ACUL`: Link acul for modules that depend on it
 - `BUILD_TESTS`: Enable testing
 - `ENABLE_COVERAGE`: Enable code coverage
 

@@ -4,7 +4,7 @@
 #include "../type_info.hpp"
 #include "geometric.hpp"
 
-namespace amal::internal
+namespace amal::detail
 {
 #ifdef __SSE2__
     template <length_t N, length_t M>
@@ -1058,4 +1058,4 @@ namespace amal::internal
 
     #endif
 #endif
-} // namespace amal::internal
+} // namespace amal::detail

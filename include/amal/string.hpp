@@ -1,8 +1,8 @@
 #pragma once
 
 #include <acul/string/utils.hpp>
-#include "../../matrix.hpp"
-#include "../../vector.hpp"
+#include "matrix.hpp"
+#include "vector.hpp"
 
 namespace acul
 {
@@ -18,10 +18,8 @@ namespace acul
         int written = to_string(vec.x, buffer + offset, buffer_size - offset, 5);
         if (written == 0) return 0;
         offset += written;
-        if (offset < buffer_size - 1)
-            buffer[offset++] = ' ';
-        else
-            return 0;
+        if (offset < buffer_size - 1) buffer[offset++] = ' ';
+        else return 0;
 
         written = to_string(vec.y, buffer + offset, buffer_size - offset, 5);
         if (written == 0) return 0;
@@ -42,18 +40,14 @@ namespace acul
         int written = to_string(vec.x, buffer + offset, buffer_size - offset, 5);
         if (written == 0) return 0;
         offset += written;
-        if (offset < buffer_size - 1)
-            buffer[offset++] = ' ';
-        else
-            return 0;
+        if (offset < buffer_size - 1) buffer[offset++] = ' ';
+        else return 0;
 
         written = to_string(vec.y, buffer + offset, buffer_size - offset, 5);
         if (written == 0) return 0;
         offset += written;
-        if (offset < buffer_size - 1)
-            buffer[offset++] = ' ';
-        else
-            return 0;
+        if (offset < buffer_size - 1) buffer[offset++] = ' ';
+        else return 0;
 
         written = to_string(vec.z, buffer + offset, buffer_size - offset, 5);
         if (written == 0) return 0;

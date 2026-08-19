@@ -39,7 +39,7 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF radians(AMAL_VEC_SELF const &degrees)
     {
-        return internal::create_by_call(degrees, radians);
+        return detail::create_by_call(degrees, radians);
     }
 
     template <typename T>
@@ -52,49 +52,49 @@ namespace amal
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF degrees(AMAL_VEC_SELF const &radians)
     {
-        return internal::create_by_call(radians, degrees);
+        return detail::create_by_call(radians, degrees);
     }
 
     using std::sin;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF sin(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::sin);
+        return detail::create_by_call(v, std::sin);
     }
 
     using std::cos;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF cos(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::cos);
+        return detail::create_by_call(v, std::cos);
     }
 
     using std::tan;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF tan(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::tan);
+        return detail::create_by_call(v, std::tan);
     }
 
     using std::asin;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF asin(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::asin);
+        return detail::create_by_call(v, std::asin);
     }
 
     using std::acos;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF acos(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::acos);
+        return detail::create_by_call(v, std::acos);
     }
 
     using std::atan;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF atan(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::atan);
+        return detail::create_by_call(v, std::atan);
     }
 
     using std::atan2;
@@ -102,48 +102,48 @@ namespace amal
     inline AMAL_VEC_SELF atan2(AMAL_VEC_SELF const &y, AMAL_VEC_SELF const &x)
     {
         using atan2_fn = T (*)(T, T);
-        return internal::create_by_call(y, x, static_cast<atan2_fn>(std::atan2));
+        return detail::create_by_call(y, x, static_cast<atan2_fn>(std::atan2));
     }
 
     using std::sinh;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF sinh(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::sinh);
+        return detail::create_by_call(v, std::sinh);
     }
 
     using std::cosh;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF cosh(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::cosh);
+        return detail::create_by_call(v, std::cosh);
     }
 
     using std::tanh;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF tanh(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::tanh);
+        return detail::create_by_call(v, std::tanh);
     }
 
     using std::asinh;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF asinh(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::asinh);
+        return detail::create_by_call(v, std::asinh);
     }
 
     using std::acosh;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF acosh(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::acosh);
+        return detail::create_by_call(v, std::acosh);
     }
 
     using std::atanh;
     template <length_t N, typename T, bool aligned>
     inline AMAL_VEC_SELF atanh(AMAL_VEC_SELF const &v)
     {
-        return internal::create_by_call(v, std::atanh);
+        return detail::create_by_call(v, std::atanh);
     }
 } // namespace amal

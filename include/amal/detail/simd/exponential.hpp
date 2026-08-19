@@ -10,7 +10,7 @@
 
 namespace amal
 {
-    namespace internal
+    namespace detail
     {
 #if defined(__SSE2__)
         inline __m128_u log2_poly_1pf(__m128_u f)
@@ -302,5 +302,5 @@ namespace amal
             return exp2(_mm256_mul_pd(x, _mm256_set1_pd(log2_e)));
         }
 #endif
-    } // namespace internal
+    } // namespace detail
 } // namespace amal
