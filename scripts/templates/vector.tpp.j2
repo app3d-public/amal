@@ -71,8 +71,8 @@ namespace amal
         template <length_t M, class U, bool A>
         constexpr vec& operator=(AMAL_VEC(M, U, A) const& rhs)
         {
-            constexpr bool L_SIMD     = detail::is_simd_enabled_v<typename vec::simd_type::value_type>;
-            constexpr bool R_SIMD     = detail::is_simd_enabled_v<typename AMAL_VEC(M, U, A)::simd_type::value_type>;
+            constexpr bool L_SIMD     = !__is_same(typename vec::simd_type::value_type, detail::simd_disabled);
+            constexpr bool R_SIMD     = !__is_same(typename AMAL_VEC(M, U, A)::simd_type::value_type, detail::simd_disabled);
 
             if constexpr (L_SIMD && R_SIMD && std::is_same_v<T, U>)
                 this->s = rhs.s;

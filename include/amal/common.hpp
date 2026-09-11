@@ -37,7 +37,7 @@ namespace amal
             for (length_t i = 0; i < N; ++i) mask[i] = a[i] ? -1 : 0;
             return AMAL_VEC_SELF(detail::mix(x.s, y.s, mask));
         }
-        else if constexpr (std::is_same_v<__v4si_u, simd_t>) return AMAL_VEC_SELF(detail::mix(x.s, y.s, a.s));
+        else if constexpr (__is_same(__v4si_u, simd_t)) return AMAL_VEC_SELF(detail::mix(x.s, y.s, a.s));
         else
         {
             AMAL_VEC(N, T, aligned) af(a);
