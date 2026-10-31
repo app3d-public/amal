@@ -132,16 +132,6 @@ namespace amal
     {
         return detail::create_by_call(v, std::round);
     }
-    // Rounds a floating-point number to the nearest power of 10.
-    template <typename T>
-    constexpr T round10(T value)
-    {
-        if (value == 0) return 0;
-        float value_abs = abs(value);
-        int exponent = static_cast<int>(round(log10(value_abs)));
-        float base = pow(10, exponent);
-        return base * sign(value);
-    }
 
     using std::ceil;
 #ifdef AMAL_SIMD_ENABLE
