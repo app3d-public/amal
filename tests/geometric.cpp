@@ -6,6 +6,16 @@ using namespace amal;
 void test_geometric()
 {
     {
+        const vec2 a(2.0f, 3.0f);
+        const vec2 b(5.0f, 7.0f);
+        assert(cross(a, b) == -1.0f);
+        assert(cross(b, a) == 1.0f);
+        assert(cross(a, a) == 0.0f);
+        assert(cross(dvec2(2.0, 3.0), dvec2(5.0, 7.0)) == -1.0);
+        printf("cross 2D passed\n");
+    }
+
+    {
         vec3 v(3.0f, 4.0f, 0.0f);
         float l = length(v);
         assert(abs(l - 5.0f) < 1e-5f);

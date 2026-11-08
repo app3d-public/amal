@@ -72,6 +72,12 @@ namespace amal
     }
 
     template <typename T, bool aligned>
+    inline constexpr T cross(AMAL_NVEC(2) const &v1, AMAL_NVEC(2) const &v2)
+    {
+        return v1.x * v2.y - v1.y * v2.x;
+    }
+
+    template <typename T, bool aligned>
     inline AMAL_TYPE_SIMD(AMAL_NVEC(3), AMAL_NVEC(3)) cross(AMAL_NVEC(3) const &v1, AMAL_NVEC(3) const &v2)
     {
         return AMAL_NVEC(3)(detail::cross(v1.s, v2.s));
